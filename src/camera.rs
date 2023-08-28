@@ -1,7 +1,13 @@
 use crate::render_target::RenderTarget;
-use crate::{ray::Ray, world::ray_color};
+use crate::utils::Interval;
+use crate::{
+    ray::Ray,
+    world::hittable::{Hittable, World},
+};
 use indicatif::ProgressIterator;
 use nalgebra::{vector, Point2, Vector3};
+
+use crate::color::{self, Color};
 
 pub struct Viewport {
     width: f64,
@@ -54,11 +60,11 @@ impl Camera {
         focal_length: f64,
         position: Vector3<f64>,
         target: RenderTarget,
-    ) -> Camera {
+    ) -> Self {
         let viewport = Viewport::new(target.real_ratio(), viewport_width, focal_length);
         //dbg!(viewport.u());
         //dbg!(viewport.v());
-        Camera {
+        Self {
             viewport,
             focal_length,
             position,
@@ -73,15 +79,29 @@ impl Camera {
         )
     }
 
-    pub fn render(&self) {
+    pub fn render(&self, world: &World) {
         self.target.initialize();
         for j in (0..self.target.height()).progress() {
             for i in 0..self.target.width() {
                 let relative_position = self.target.relative_position_of_pixel(i, j);
                 //dbg!(relative_position);
                 let ray = self.ray_through(relative_position);
-                self.target.write_pixel(ray_color(&ray));
+                self.target.write_pixel(Camera::ray_color(&ray, world));
             }
         }
+    }
+
+    fn ray_color(ray: &Ray, world: &World) -> Color {
+        if let Some(rec) = world.hit(ray, &Interval::non_neg()) {
+            let fake_color = (rec.normal / 2f64).add_scalar(0.5);
+            return Color::new(fake_color.x, fake_color.y, fake_color.z);
+        }
+        let dir = ray.direction.normalize();
+        let t = 0.5 * (dir.y + 1f64);
+        color::lerp(
+            &Color::new(1f64, 1f64, 1f64),
+            &Color::new(0.5f64, 0.7f64, 1.0f64),
+            t,
+        )
     }
 }
