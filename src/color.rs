@@ -1,12 +1,17 @@
 use std::fmt::Display;
 
+use nalgebra::{vector, Vector3};
+
+#[derive(Clone, Copy)]
 pub struct Color {
-    color: [f64; 3],
+    color: Vector3<f64>,
 }
 
 impl Color {
-    pub fn new(r: f64, g: f64, b: f64) -> Color {
-        Color { color: [r, g, b] }
+    pub fn new(r: f64, g: f64, b: f64) -> Self {
+        Self {
+            color: vector![r, g, b],
+        }
     }
     pub fn from_hex(hex: u32) -> Color {
         let mask = 0xff;
@@ -14,6 +19,10 @@ impl Color {
         let g = ((hex >> 8) & mask) as f64 / 256f64;
         let r = ((hex >> 16) & mask) as f64 / 256f64;
         Self::new(r, g, b)
+    }
+
+    pub fn from_vec(v: &Vector3<f64>) -> Color {
+        Color { color: v.clone() }
     }
     pub fn r(&self) -> f64 {
         self.color[0]
@@ -32,6 +41,16 @@ impl Color {
     }
     pub fn bi(&self) -> i64 {
         (255.999 * self.b()).trunc() as i64
+    }
+
+    pub fn attenute_mut(&mut self, scale: &Vector3<f64>) {
+        self.color.component_mul_assign(scale);
+    }
+
+    pub fn attenute(&self, scale: &Vector3<f64>) -> Self {
+        let mut copy = self.clone();
+        copy.attenute_mut(scale);
+        copy
     }
 }
 
@@ -54,14 +73,14 @@ pub trait ColorMixer {
 }
 
 pub struct LinearMixer {
-    color: [f64; 3],
+    color: Vector3<f64>,
     total_color: usize,
 }
 
 impl LinearMixer {
     pub fn new() -> Self {
         Self {
-            color: [0f64, 0f64, 0f64],
+            color: vector![0f64, 0f64, 0f64],
             total_color: 0,
         }
     }
@@ -81,25 +100,26 @@ impl ColorMixer for LinearMixer {
             self.color[i] /= self.total_color as f64;
         }
         let result = Color { color: self.color };
-        self.color = [0f64, 0f64, 0f64];
+        self.color = vector![0f64, 0f64, 0f64];
         self.total_color = 0;
         result
     }
 }
 
 pub struct RMSMixer {
-    color: [f64; 3],
+    color: Vector3<f64>,
     total_color: usize,
 }
 
 impl RMSMixer {
     pub fn new() -> Self {
         Self {
-            color: [0f64, 0f64, 0f64],
+            color: vector![0f64, 0f64, 0f64],
             total_color: 0,
         }
     }
 }
+
 impl ColorMixer for RMSMixer {
     fn add(&mut self, c: &Color) -> &mut Self {
         for i in 0..3 {
@@ -114,7 +134,7 @@ impl ColorMixer for RMSMixer {
             self.color[i] = (self.color[i] / self.total_color as f64).sqrt();
         }
         let result = Color { color: self.color };
-        self.color = [0f64, 0f64, 0f64];
+        self.color = vector![0f64, 0f64, 0f64];
         self.total_color = 0;
         result
     }

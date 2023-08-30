@@ -6,15 +6,15 @@ mod render_target;
 mod utils;
 mod world;
 use crate::camera::Camera;
-use crate::color::LinearMixer;
+use crate::color::RMSMixer;
 use crate::render_target::RenderTarget;
 use crate::world::{hittable::Hittable, sphere::Sphere};
 use nalgebra::{vector, Point3};
 
 fn main() {
     // Image
-    let image_width = 256;
-    let aspect_ratio = 16f64 / 9f64;
+    let image_width = 800;
+    let aspect_ratio = 4f64 / 3f64;
 
     let world = vec![
         Box::new(Sphere::new(Point3::new(0f64, 0f64, -1f64), 0.5)) as Box<dyn Hittable>,
@@ -22,12 +22,12 @@ fn main() {
     ];
 
     let image = RenderTarget::new(image_width, aspect_ratio);
-    let mixer = LinearMixer::new();
+    let mixer = RMSMixer::new();
     dbg!(image.width());
     dbg!(image.height());
     dbg!(image.real_ratio());
     dbg!(image.aspect_ratio());
-    let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, 100, mixer);
+    let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, 20, mixer);
 
     // Render
     //for j in (0..image.height()).progress() {
