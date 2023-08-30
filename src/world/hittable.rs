@@ -1,8 +1,6 @@
-use std::array::from_fn;
-
 use crate::ray::Ray;
 use crate::utils::Interval;
-use nalgebra::{DimNameDiv, Point3, Vector3};
+use nalgebra::{Point3, Vector3};
 
 pub trait Hittable {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord>;

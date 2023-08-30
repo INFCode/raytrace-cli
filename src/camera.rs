@@ -1,11 +1,13 @@
 use crate::render_target::RenderTarget;
 use crate::utils::Interval;
 use crate::{
+    color::ColorMixer,
     ray::Ray,
     world::hittable::{Hittable, World},
 };
 use indicatif::ProgressIterator;
-use nalgebra::{vector, Point2, Vector3};
+use nalgebra::{vector, Point2, Vector2, Vector3};
+use rand::random;
 
 use crate::color::{self, Color};
 
@@ -47,28 +49,32 @@ impl Viewport {
     }
 }
 
-pub struct Camera {
+pub struct Camera<M: ColorMixer> {
     viewport: Viewport,
-    focal_length: f64,
     position: Vector3<f64>,
     pub target: RenderTarget,
+    pub sample_per_pixel: usize,
+    mixer: M,
 }
 
-impl Camera {
+impl<M: ColorMixer> Camera<M> {
     pub fn new(
         viewport_width: f64,
         focal_length: f64,
         position: Vector3<f64>,
         target: RenderTarget,
+        sample_per_pixel: usize,
+        mixer: M,
     ) -> Self {
         let viewport = Viewport::new(target.real_ratio(), viewport_width, focal_length);
         //dbg!(viewport.u());
         //dbg!(viewport.v());
         Self {
             viewport,
-            focal_length,
             position,
             target,
+            sample_per_pixel,
+            mixer,
         }
     }
 
@@ -79,14 +85,22 @@ impl Camera {
         )
     }
 
-    pub fn render(&self, world: &World) {
+    pub fn render(&mut self, world: &World) {
         self.target.initialize();
         for j in (0..self.target.height()).progress() {
             for i in 0..self.target.width() {
-                let relative_position = self.target.relative_position_of_pixel(i, j);
-                //dbg!(relative_position);
-                let ray = self.ray_through(relative_position);
-                self.target.write_pixel(Camera::ray_color(&ray, world));
+                for r in 0..self.sample_per_pixel {
+                    let random_offset = [random::<f64>() - 0.5, random::<f64>() - 0.5];
+                    let relative_position = self.target.relative_position_of_pixel(
+                        i as f64 + random_offset[0],
+                        j as f64 + random_offset[1],
+                    );
+                    //dbg!(relative_position);
+                    let ray = self.ray_through(relative_position);
+                    let color = Camera::<M>::ray_color(&ray, world);
+                    self.mixer.add(&color);
+                }
+                self.target.write_pixel(self.mixer.mix());
             }
         }
     }

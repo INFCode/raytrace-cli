@@ -25,10 +25,10 @@ impl RenderTarget {
         self.width as f64 / self.height as f64
     }
 
-    pub fn relative_position_of_pixel(&self, col: isize, row: isize) -> Point2<f64> {
+    pub fn relative_position_of_pixel(&self, col: f64, row: f64) -> Point2<f64> {
         Point2::new(
-            (col as f64 + 0.5f64) / self.width as f64,
-            (row as f64 + 0.5f64) / self.height as f64,
+            (col + 0.5f64) / self.width as f64,
+            (row + 0.5f64) / self.height as f64,
         )
     }
 

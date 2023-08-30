@@ -6,6 +6,7 @@ mod render_target;
 mod utils;
 mod world;
 use crate::camera::Camera;
+use crate::color::LinearMixer;
 use crate::render_target::RenderTarget;
 use crate::world::{hittable::Hittable, sphere::Sphere};
 use nalgebra::{vector, Point3};
@@ -21,11 +22,12 @@ fn main() {
     ];
 
     let image = RenderTarget::new(image_width, aspect_ratio);
+    let mixer = LinearMixer::new();
     dbg!(image.width());
     dbg!(image.height());
     dbg!(image.real_ratio());
     dbg!(image.aspect_ratio());
-    let camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image);
+    let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, 100, mixer);
 
     // Render
     //for j in (0..image.height()).progress() {
