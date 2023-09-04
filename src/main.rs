@@ -13,19 +13,20 @@ use crate::color::RMSMixer;
 use crate::materials::Material;
 use crate::materials::{LambertianMaterial, SimpleDiffuseMaterial};
 use crate::render_target::RenderTarget;
-use crate::world::hittable::Hittable;
-use crate::world::sphere::Sphere;
+use crate::world::{Hittable, Sphere};
 use nalgebra::Vector3;
 use nalgebra::{vector, Point3};
 
 fn main() {
     // Image
-    let image_width = 200;
+    let image_width = 100;
     let aspect_ratio = 4f64 / 3f64;
+
+    let spp = 5;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian =
-        Box::new(LambertianMaterial::new(Vector3::from_element(0.3))) as Box<dyn Material>;
+        Box::new(LambertianMaterial::new(Vector3::from_element(0.6))) as Box<dyn Material>;
 
     {
         let s1 = Sphere::new(Point3::new(0f64, 0f64, -1f64), 0.5, &lambertian);
@@ -41,7 +42,7 @@ fn main() {
         dbg!(image.height());
         dbg!(image.real_ratio());
         dbg!(image.aspect_ratio());
-        let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, 20, mixer);
+        let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
 
         // Render
         //for j in (0..image.height()).progress() {

@@ -31,10 +31,17 @@ impl Interval {
         }
     }
 
-    pub fn non_neg() -> Self {
+    pub fn greater_than(lower: f64) -> Self {
         Self {
-            lower: 0f64,
+            lower,
             upper: f64::INFINITY,
+        }
+    }
+
+    pub fn smaller_than(upper: f64) -> Self {
+        Self {
+            lower: f64::NEG_INFINITY,
+            upper,
         }
     }
 

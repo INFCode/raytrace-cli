@@ -1,11 +1,14 @@
 use crate::render_target::RenderTarget;
 use crate::utils::Interval;
-use crate::{color::ColorMixer, ray::Ray, world::hittable::Hittable};
+use crate::{
+    color::{Color, ColorMixer},
+    ray::Ray,
+    world::Hittable,
+};
 use indicatif::ProgressIterator;
+use indicatif::ProgressStyle;
 use nalgebra::{vector, Point2, Vector3};
 use rand::random;
-
-use crate::color::{self, Color};
 
 pub struct Viewport {
     width: f64,
@@ -83,8 +86,13 @@ impl<M: ColorMixer> Camera<M> {
 
     pub fn render<W: Hittable>(&mut self, world: &W) {
         self.target.initialize();
-        let max_depth = 50;
-        for j in (0..self.target.height()).progress() {
+        let max_depth = 100;
+        let style = ProgressStyle::default_bar()
+            .template(
+                "[{elapsed_precise}/{duration_precise}] [{bar:40.cyan/blue}] {pos}/{len}={percent}%",
+            )
+            .unwrap().progress_chars("##-");
+        for j in (0..self.target.height()).progress_with_style(style) {
             for i in 0..self.target.width() {
                 for _s in 0..self.sample_per_pixel {
                     let random_offset = [random::<f64>() - 0.5, random::<f64>() - 0.5];
@@ -107,7 +115,9 @@ impl<M: ColorMixer> Camera<M> {
             // too many reflections, no light remaining
             return Color::from_hex(0x000000);
         }
-        if let Some(hit_rec) = world.hit(ray, &Interval::non_neg()) {
+        // add a small eps to fix shadow acne
+        let eps = 0.001;
+        if let Some(hit_rec) = world.hit(ray, &Interval::greater_than(eps)) {
             if let Some(scatter_rec) = hit_rec.mat.scatter(ray, &hit_rec) {
                 return Camera::<M>::ray_color(&scatter_rec.scattered, world, depth - 1)
                     .attenute(&scatter_rec.attenuation_factor);
@@ -118,7 +128,7 @@ impl<M: ColorMixer> Camera<M> {
         // miss, background color
         let dir = ray.direction.normalize();
         let t = 0.5 * (dir.y + 1f64);
-        color::lerp(
+        Color::lerp(
             &Color::new(1f64, 1f64, 1f64),
             &Color::new(0.5f64, 0.7f64, 1.0f64),
             t,

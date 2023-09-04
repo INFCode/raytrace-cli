@@ -33,15 +33,6 @@ impl Color {
     pub fn b(&self) -> f64 {
         self.color[2]
     }
-    pub fn ri(&self) -> i64 {
-        (255.999 * self.r()).trunc() as i64
-    }
-    pub fn gi(&self) -> i64 {
-        (255.999 * self.g()).trunc() as i64
-    }
-    pub fn bi(&self) -> i64 {
-        (255.999 * self.b()).trunc() as i64
-    }
 
     pub fn attenute_mut(&mut self, scale: &Vector3<f64>) {
         self.color.component_mul_assign(scale);
@@ -52,18 +43,22 @@ impl Color {
         copy.attenute_mut(scale);
         copy
     }
-}
 
-pub fn lerp(c1: &Color, c2: &Color, t: f64) -> Color {
-    let r = c1.r() * (1f64 - t) + c2.r() * t;
-    let g = c1.g() * (1f64 - t) + c2.g() * t;
-    let b = c1.b() * (1f64 - t) + c2.b() * t;
-    Color::new(r, g, b)
+    pub fn lerp(c1: &Color, c2: &Color, t: f64) -> Color {
+        let r = c1.r() * (1f64 - t) + c2.r() * t;
+        let g = c1.g() * (1f64 - t) + c2.g() * t;
+        let b = c1.b() * (1f64 - t) + c2.b() * t;
+        Color::new(r, g, b)
+    }
 }
 
 impl Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.ri(), self.gi(), self.bi())
+        let ri = (255.999 * f64::sqrt(self.r())).trunc() as i64;
+        let gi = (255.999 * f64::sqrt(self.g())).trunc() as i64;
+        let bi = (255.999 * f64::sqrt(self.b())).trunc() as i64;
+        // gamma is set to 2
+        write!(f, "{} {} {}", ri, gi, bi)
     }
 }
 
