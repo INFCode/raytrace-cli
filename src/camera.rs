@@ -1,12 +1,8 @@
 use crate::render_target::RenderTarget;
 use crate::utils::Interval;
-use crate::{
-    color::ColorMixer,
-    ray::Ray,
-    world::hittable::{Hittable, World},
-};
+use crate::{color::ColorMixer, ray::Ray, world::hittable::Hittable};
 use indicatif::ProgressIterator;
-use nalgebra::{vector, Point2, Vector2, Vector3};
+use nalgebra::{vector, Point2, Vector3};
 use rand::random;
 
 use crate::color::{self, Color};
@@ -85,11 +81,12 @@ impl<M: ColorMixer> Camera<M> {
         )
     }
 
-    pub fn render(&mut self, world: &World) {
+    pub fn render<W: Hittable>(&mut self, world: &W) {
         self.target.initialize();
+        let max_depth = 50;
         for j in (0..self.target.height()).progress() {
             for i in 0..self.target.width() {
-                for r in 0..self.sample_per_pixel {
+                for _s in 0..self.sample_per_pixel {
                     let random_offset = [random::<f64>() - 0.5, random::<f64>() - 0.5];
                     let relative_position = self.target.relative_position_of_pixel(
                         i as f64 + random_offset[0],
@@ -97,7 +94,7 @@ impl<M: ColorMixer> Camera<M> {
                     );
                     //dbg!(relative_position);
                     let ray = self.ray_through(relative_position);
-                    let color = Camera::<M>::ray_color(&ray, world);
+                    let color = Camera::<M>::ray_color(&ray, world, max_depth);
                     self.mixer.add(&color);
                 }
                 self.target.write_pixel(self.mixer.mix());
@@ -105,11 +102,20 @@ impl<M: ColorMixer> Camera<M> {
         }
     }
 
-    fn ray_color(ray: &Ray, world: &World) -> Color {
-        if let Some(rec) = world.hit(ray, &Interval::non_neg()) {
-            let fake_color = (rec.normal / 2f64).add_scalar(0.5);
-            return Color::new(fake_color.x, fake_color.y, fake_color.z);
+    fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> Color {
+        if depth <= 0 {
+            // too many reflections, no light remaining
+            return Color::from_hex(0x000000);
         }
+        if let Some(hit_rec) = world.hit(ray, &Interval::non_neg()) {
+            if let Some(scatter_rec) = hit_rec.mat.scatter(ray, &hit_rec) {
+                return Camera::<M>::ray_color(&scatter_rec.scattered, world, depth - 1)
+                    .attenute(&scatter_rec.attenuation_factor);
+            }
+            // error color
+            return Color::from_hex(0x6000a0);
+        }
+        // miss, background color
         let dir = ray.direction.normalize();
         let t = 0.5 * (dir.y + 1f64);
         color::lerp(

@@ -1,19 +1,24 @@
 use super::hittable::{HitRecord, Hittable};
-use crate::{ray::Ray, utils::Interval};
+use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
 use nalgebra::Point3;
 
-pub struct Sphere {
+pub struct Sphere<'a> {
     center: Point3<f64>,
     radius: f64,
+    material: MaterialRef<'a>,
 }
 
-impl Sphere {
-    pub fn new(center: Point3<f64>, radius: f64) -> Self {
-        Self { center, radius }
+impl<'a> Sphere<'a> {
+    pub fn new(center: Point3<f64>, radius: f64, material: MaterialRef<'a>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
-impl Hittable for Sphere {
+impl<'a> Hittable for Sphere<'a> {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord> {
         // Solve the quadratic equation based on vector math.
         // Find the nearer intersection
@@ -48,6 +53,6 @@ impl Hittable for Sphere {
 
         let normal_vec = (ray.at(root) - self.center) / self.radius;
 
-        Some(HitRecord::new(ray, &normal_vec, root))
+        Some(HitRecord::new(ray, &normal_vec, root, self.material))
     }
 }
