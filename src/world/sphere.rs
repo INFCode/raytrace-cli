@@ -56,3 +56,75 @@ impl<'a> Hittable for Sphere<'a> {
         Some(HitRecord::new(ray, &normal_vec, root, self.material))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::materials::SimpleDiffuseMaterial;
+    use crate::{materials::Material, ray::Ray, utils::Interval};
+    use nalgebra::Vector3;
+
+    #[test]
+    fn test_hit_from_outside_sphere() {
+        let sphere_center = Point3::new(0.0, 0.0, 0.0);
+        let sphere_radius = 1.0;
+        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let sphere = Sphere::new(sphere_center, sphere_radius, &material);
+
+        let ray_origin = Point3::new(2.0, 0.0, 0.0);
+        let ray_direction = Vector3::new(-1.0, 0.0, 0.0);
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let available_range = Interval::new(0.0, 5.0);
+
+        assert!(sphere.hit(&ray, &available_range).is_some());
+    }
+
+    #[test]
+    fn test_miss_from_outside_sphere() {
+        let sphere_center = Point3::new(0.0, 0.0, 0.0);
+        let sphere_radius = 1.0;
+        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let sphere = Sphere::new(sphere_center, sphere_radius, &material);
+
+        let ray_origin = Point3::new(2.0, 2.0, 0.0);
+        let ray_direction = Vector3::new(-1.0, 0.0, 0.0);
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let available_range = Interval::new(0.0, 5.0);
+
+        assert!(sphere.hit(&ray, &available_range).is_none());
+    }
+
+    #[test]
+    fn test_hit_from_inside_sphere() {
+        let sphere_center = Point3::new(0.0, 0.0, 0.0);
+        let sphere_radius = 2.0;
+        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let sphere = Sphere::new(sphere_center, sphere_radius, &material);
+
+        let ray_origin = Point3::new(0.0, 0.0, 0.0);
+        let ray_direction = Vector3::new(1.0, 0.0, 0.0);
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let available_range = Interval::new(0.0, 5.0);
+
+        assert!(sphere.hit(&ray, &available_range).is_some());
+    }
+
+    #[test]
+    fn test_hit_with_limited_range() {
+        let sphere_center = Point3::new(0.0, 0.0, 0.0);
+        let sphere_radius = 1.0;
+        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let sphere = Sphere::new(sphere_center, sphere_radius, &material);
+
+        let ray_origin = Point3::new(2.0, 0.0, 0.0);
+        let ray_direction = Vector3::new(-1.0, 0.0, 0.0);
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let available_range = Interval::new(0.0, 0.5);
+
+        assert!(sphere.hit(&ray, &available_range).is_none());
+    }
+}

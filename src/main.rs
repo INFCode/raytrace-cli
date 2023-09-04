@@ -19,14 +19,13 @@ use nalgebra::{vector, Point3};
 
 fn main() {
     // Image
-    let image_width = 100;
+    let image_width = 1600;
     let aspect_ratio = 4f64 / 3f64;
 
-    let spp = 5;
+    let spp = 1000;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
-    let lambertian =
-        Box::new(LambertianMaterial::new(Vector3::from_element(0.6))) as Box<dyn Material>;
+    let lambertian = Box::new(LambertianMaterial::new(vector![0.2, 0.8, 0.1])) as Box<dyn Material>;
 
     {
         let s1 = Sphere::new(Point3::new(0f64, 0f64, -1f64), 0.5, &lambertian);

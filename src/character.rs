@@ -70,9 +70,8 @@ mod test {
 
     #[test]
     fn load_all() {
-        let f =
-            character::font_from_file("/usr/share/fonts/consolas-with-yahei/consnerd.ttf").unwrap();
-        let m = character::font_to_ascii_vector(&f);
+        let f = font_from_file("/usr/share/fonts/consolas-with-yahei/consnerd.ttf").unwrap();
+        let m = font_to_ascii_vector(&f);
         println!(
             "{:?}",
             m.keys()
