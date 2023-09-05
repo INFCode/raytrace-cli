@@ -11,50 +11,42 @@ mod world;
 use crate::camera::Camera;
 use crate::color::RMSMixer;
 use crate::materials::Material;
-use crate::materials::{LambertianMaterial, SimpleDiffuseMaterial};
+use crate::materials::{LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial};
 use crate::render_target::RenderTarget;
 use crate::world::{Hittable, Sphere};
-use nalgebra::Vector3;
-use nalgebra::{vector, Point3};
+use nalgebra::{vector, Point3, Vector3};
 
 fn main() {
     // Image
-    let image_width = 1600;
+    let image_width = 400;
     let aspect_ratio = 4f64 / 3f64;
 
-    let spp = 1000;
+    let spp = 100;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian = Box::new(LambertianMaterial::new(vector![0.2, 0.8, 0.1])) as Box<dyn Material>;
+    let metal = Box::new(MetalMaterial::new(Vector3::from_element(0.9), 0f64)) as Box<dyn Material>;
+    let metal_fuzz = Box::new(MetalMaterial::new(vector![0.8, 0.6, 0.2], 0.6)) as Box<dyn Material>;
 
-    {
-        let s1 = Sphere::new(Point3::new(0f64, 0f64, -1f64), 0.5, &lambertian);
-        let s2 = Sphere::new(Point3::new(0f64, -100.5, -1f64), 100f64, &simple);
-        let world = vec![
-            Box::new(s1) as Box<dyn Hittable>,
-            Box::new(s2) as Box<dyn Hittable>,
-        ];
+    let s1 = Sphere::new(Point3::new(0f64, 0f64, -1f64), 0.5, &lambertian);
+    let s2 = Sphere::new(Point3::new(-1f64, 0f64, -1f64), 0.5, &metal);
+    let s3 = Sphere::new(Point3::new(1f64, 0f64, -1f64), 0.5, &metal_fuzz);
+    let gnd = Sphere::new(Point3::new(0f64, -100.5, -1f64), 100f64, &simple);
 
-        let image = RenderTarget::new(image_width, aspect_ratio);
-        let mixer = RMSMixer::new();
-        dbg!(image.width());
-        dbg!(image.height());
-        dbg!(image.real_ratio());
-        dbg!(image.aspect_ratio());
-        let mut camera = Camera::new(2f64, 1f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
+    let world = vec![
+        Box::new(s1) as Box<dyn Hittable>,
+        Box::new(s2) as Box<dyn Hittable>,
+        Box::new(s3) as Box<dyn Hittable>,
+        Box::new(gnd) as Box<dyn Hittable>,
+    ];
 
-        // Render
-        //for j in (0..image.height()).progress() {
-        //    for i in 0..image.width() {
-        //        let r = i as f64 / (image.width() - 1) as f64;
-        //        let g = j as f64 / (image.height() - 1) as f64;
-        //        let b = 0f64;
-        //        let color = Color::new(r, g, b);
+    let image = RenderTarget::new(image_width, aspect_ratio);
+    let mixer = RMSMixer::new();
+    dbg!(image.width());
+    dbg!(image.height());
+    dbg!(image.real_ratio());
+    dbg!(image.aspect_ratio());
+    let mut camera = Camera::new(2f64, 0.5f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
 
-        //        println!("{}", color);
-        //    }
-        //}
-        camera.render(&world);
-        println!("{:?} {:?}", simple, lambertian);
-    }
+    camera.render(&world);
 }
