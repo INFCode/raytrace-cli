@@ -27,7 +27,7 @@ impl Material for MetalMaterial {
         let fuzz_reflect = reflect + self.fuzz * random_unit_vector();
         Some(ScatterRecord {
             attenuation_factor: self.albedo,
-            scattered: Ray::new(hit.point, reflect),
+            scattered: Ray::new(hit.point, fuzz_reflect),
         })
     }
 }
