@@ -9,7 +9,7 @@ mod utils;
 mod world;
 
 use crate::camera::Camera;
-use crate::color::RMSMixer;
+use crate::color::LinearMixer;
 use crate::materials::Material;
 use crate::materials::{LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial};
 use crate::render_target::RenderTarget;
@@ -21,7 +21,7 @@ fn main() {
     let image_width = 400;
     let aspect_ratio = 4f64 / 3f64;
 
-    let spp = 100;
+    let spp = 1000;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian = Box::new(LambertianMaterial::new(vector![0.2, 0.8, 0.1])) as Box<dyn Material>;
@@ -41,7 +41,7 @@ fn main() {
     ];
 
     let image = RenderTarget::new(image_width, aspect_ratio);
-    let mixer = RMSMixer::new();
+    let mixer = LinearMixer::new();
     dbg!(image.width());
     dbg!(image.height());
     dbg!(image.real_ratio());
