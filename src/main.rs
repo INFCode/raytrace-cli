@@ -12,16 +12,17 @@ use crate::camera::Camera;
 use crate::color::LinearMixer;
 use crate::materials::Material;
 use crate::materials::{LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial};
+use crate::render_target::ImageTarget;
 use crate::render_target::RenderTarget;
 use crate::world::{Hittable, Sphere};
 use nalgebra::{vector, Point3, Vector3};
 
 fn main() {
     // Image
-    let image_width = 400;
+    let image_width = 200;
     let aspect_ratio = 4f64 / 3f64;
 
-    let spp = 1000;
+    let spp = 100;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian = Box::new(LambertianMaterial::new(vector![0.2, 0.8, 0.1])) as Box<dyn Material>;
@@ -40,12 +41,13 @@ fn main() {
         Box::new(gnd) as Box<dyn Hittable>,
     ];
 
-    let image = RenderTarget::new(image_width, aspect_ratio);
+    let image = ImageTarget::new(image_width, aspect_ratio);
     let mixer = LinearMixer::new();
+
     dbg!(image.width());
     dbg!(image.height());
-    dbg!(image.real_ratio());
-    dbg!(image.aspect_ratio());
+    dbg!(image.actual_aspect_ratio());
+    dbg!(image.theoretical_aspect_ratio());
     let mut camera = Camera::new(2f64, 0.5f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
 
     camera.render(&world);

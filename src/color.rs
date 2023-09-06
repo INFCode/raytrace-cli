@@ -1,6 +1,6 @@
-use std::fmt::Display;
-
 use nalgebra::{vector, Vector3};
+use std::default::Default;
+use std::fmt::Display;
 
 #[derive(Clone, Copy)]
 pub struct Color {
@@ -132,5 +132,12 @@ impl ColorMixer for RMSMixer {
         self.color = vector![0f64, 0f64, 0f64];
         self.total_color = 0;
         result
+    }
+}
+
+impl Default for Color {
+    fn default() -> Self {
+        // default to black
+        Self::from_hex(0x0)
     }
 }

@@ -48,24 +48,28 @@ impl Viewport {
     }
 }
 
-pub struct Camera<M: ColorMixer> {
+pub struct Camera<M: ColorMixer, T: RenderTarget> {
     viewport: Viewport,
     position: Vector3<f64>,
-    pub target: RenderTarget,
+    pub target: T,
     pub sample_per_pixel: usize,
     mixer: M,
 }
 
-impl<M: ColorMixer> Camera<M> {
+impl<M: ColorMixer, T: RenderTarget> Camera<M, T> {
     pub fn new(
         viewport_width: f64,
         focal_length: f64,
         position: Vector3<f64>,
-        target: RenderTarget,
+        target: T,
         sample_per_pixel: usize,
         mixer: M,
     ) -> Self {
-        let viewport = Viewport::new(target.real_ratio(), viewport_width, focal_length);
+        let viewport = Viewport::new(
+            target.theoretical_aspect_ratio(),
+            viewport_width,
+            focal_length,
+        );
         //dbg!(viewport.u());
         //dbg!(viewport.v());
         Self {
@@ -85,7 +89,6 @@ impl<M: ColorMixer> Camera<M> {
     }
 
     pub fn render<W: Hittable>(&mut self, world: &W) {
-        self.target.initialize();
         let max_depth = 100;
         let style = ProgressStyle::default_bar()
             .template(
@@ -96,18 +99,19 @@ impl<M: ColorMixer> Camera<M> {
             for i in 0..self.target.width() {
                 for _s in 0..self.sample_per_pixel {
                     let random_offset = [random::<f64>() - 0.5, random::<f64>() - 0.5];
-                    let relative_position = self.target.relative_position_of_pixel(
+                    let relative_position = self.target.normalized_pixel_position(
                         i as f64 + random_offset[0],
                         j as f64 + random_offset[1],
                     );
                     //dbg!(relative_position);
                     let ray = self.ray_through(relative_position);
-                    let color = Camera::<M>::ray_color(&ray, world, max_depth);
+                    let color = Self::ray_color(&ray, world, max_depth);
                     self.mixer.add(&color);
                 }
-                self.target.write_pixel(self.mixer.mix());
+                self.target.set_pixel(j, i, &self.mixer.mix());
             }
         }
+        print!("{}", self.target);
     }
 
     fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> Color {
@@ -119,7 +123,7 @@ impl<M: ColorMixer> Camera<M> {
         let eps = 0.001;
         if let Some(hit_rec) = world.hit(ray, &Interval::greater_than(eps)) {
             if let Some(scatter_rec) = hit_rec.mat.scatter(ray, &hit_rec) {
-                return Camera::<M>::ray_color(&scatter_rec.scattered, world, depth - 1)
+                return Self::ray_color(&scatter_rec.scattered, world, depth - 1)
                     .attenute(&scatter_rec.attenuation_factor);
             }
             // error color
