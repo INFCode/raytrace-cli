@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 mod camera;
-mod character;
 mod color;
 mod materials;
+mod output;
 mod ray;
-mod render_target;
 mod utils;
 mod world;
 
@@ -12,17 +11,16 @@ use crate::camera::Camera;
 use crate::color::LinearMixer;
 use crate::materials::Material;
 use crate::materials::{LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial};
-use crate::render_target::ImageTarget;
-use crate::render_target::RenderTarget;
+use crate::output::{ImageTarget, RenderTarget};
 use crate::world::{Hittable, Sphere};
 use nalgebra::{vector, Point3, Vector3};
 
 fn main() {
     // Image
-    let image_width = 200;
+    let image_width = 1200;
     let aspect_ratio = 4f64 / 3f64;
 
-    let spp = 100;
+    let spp = 500;
 
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian = Box::new(LambertianMaterial::new(vector![0.2, 0.8, 0.1])) as Box<dyn Material>;

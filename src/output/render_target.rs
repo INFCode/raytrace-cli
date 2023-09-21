@@ -88,3 +88,62 @@ impl RenderTarget for ImageTarget {
         self.buffer[x * self.width + y] = *color;
     }
 }
+
+pub struct TerminalTarget {
+    width: usize,
+    height: usize,
+    aspect_ratio: f64,
+    character_width: usize,
+    character_height: usize,
+    buffer: Vec<Color>,
+}
+
+impl TerminalTarget {
+    pub fn new(
+        width: usize,
+        aspect_ratio: f64,
+        character_width: usize,
+        character_height: usize,
+    ) -> TerminalTarget {
+        let mut height = (width as f64 / aspect_ratio).round() as usize;
+        if height < 1 {
+            height = 1;
+        }
+        let buffer = vec![Color::default(); width * height];
+        TerminalTarget {
+            width,
+            height,
+            aspect_ratio,
+            character_width,
+            character_height,
+            buffer,
+        }
+    }
+}
+
+impl Display for TerminalTarget {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        for c in &self.buffer {
+            writeln!(f, "{}", c)?;
+        }
+        Ok(())
+    }
+}
+
+impl RenderTarget for TerminalTarget {
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
+
+    fn theoretical_aspect_ratio(&self) -> f64 {
+        self.aspect_ratio
+    }
+
+    fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
+        self.buffer[x * self.width + y] = *color;
+    }
+}

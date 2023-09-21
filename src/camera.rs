@@ -1,4 +1,4 @@
-use crate::render_target::RenderTarget;
+use crate::output::RenderTarget;
 use crate::utils::Interval;
 use crate::{
     color::{Color, ColorMixer},
