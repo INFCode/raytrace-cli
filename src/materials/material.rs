@@ -1,6 +1,5 @@
 use nalgebra::Vector3;
 use std::boxed::Box;
-use std::fmt::Debug;
 
 use crate::ray::Ray;
 use crate::world::hittable::HitRecord;
