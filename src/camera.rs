@@ -1,117 +1,74 @@
-use crate::output::RenderTarget;
+use nalgebra::Vector3;
+
+use crate::color::Color;
+use crate::color::ColorMixer;
+use crate::light_source::RenderSpec;
+use crate::ray::Ray;
 use crate::utils::Interval;
-use crate::{
-    color::{Color, ColorMixer},
-    ray::Ray,
-    world::Hittable,
-};
-use indicatif::ProgressIterator;
-use indicatif::ProgressStyle;
-use nalgebra::{vector, Point2, Vector3};
-use rand::random;
+use crate::world::Hittable;
+use image::{ImageBuffer, Rgb};
+use indicatif::{ProgressIterator, ProgressStyle};
+use rayon::prelude::*;
 
-pub struct Viewport {
-    width: f64,
-    height: f64,
-    focal_length: f64,
-}
-
-impl Viewport {
-    pub fn new(ratio: f64, width: f64, focal_length: f64) -> Viewport {
-        let height = width / ratio;
-        Viewport {
-            width,
-            height,
-            focal_length,
-        }
-    }
-
-    pub fn u(&self) -> Vector3<f64> {
-        vector![self.width, 0f64, 0f64]
-    }
-
-    pub fn v(&self) -> Vector3<f64> {
-        vector![0f64, -self.height, 0f64]
-    }
-
-    pub fn right(&self) -> Vector3<f64> {
-        self.u()
-    }
-
-    pub fn down(&self) -> Vector3<f64> {
-        self.v()
-    }
-
-    pub fn vector_to(&self, relative_position: Point2<f64>) -> Vector3<f64> {
-        self.u() * (relative_position.x - 0.5f64) + self.v() * (relative_position.y - 0.5f64)
-            - vector![0f64, 0f64, self.focal_length]
-    }
-}
-
-pub struct Camera<M: ColorMixer, T: RenderTarget> {
-    viewport: Viewport,
+pub struct Camera {
     position: Vector3<f64>,
-    pub target: T,
-    pub sample_per_pixel: usize,
-    mixer: M,
 }
 
-impl<M: ColorMixer, T: RenderTarget> Camera<M, T> {
-    pub fn new(
-        viewport_width: f64,
-        focal_length: f64,
-        position: Vector3<f64>,
-        target: T,
-        sample_per_pixel: usize,
-        mixer: M,
-    ) -> Self {
-        let viewport = Viewport::new(
-            target.theoretical_aspect_ratio(),
-            viewport_width,
-            focal_length,
-        );
-        //dbg!(viewport.u());
-        //dbg!(viewport.v());
-        Self {
-            viewport,
-            position,
-            target,
-            sample_per_pixel,
-            mixer,
-        }
+impl Camera {
+    pub fn new(position: Vector3<f64>) -> Self {
+        Self { position }
     }
 
-    pub fn ray_through(&self, relative_position: Point2<f64>) -> Ray {
-        Ray::new(
-            self.position.into(),
-            self.viewport.vector_to(relative_position),
-        )
-    }
+    pub fn render<M: ColorMixer, R: RenderSpec, W: Hittable>(
+        &self,
+        render_spec: &R,
+        world: &W,
+    ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        let size = render_spec.image_size();
+        let width = size.width as usize;
+        let height = size.height as usize;
+        let max_depth = 10;
 
-    pub fn render<W: Hittable>(&mut self, world: &W) {
-        let max_depth = 100;
+        // Pre-allocating a flat vector to hold all pixel data
+        let mut pixels = vec![Rgb([0, 0, 0]); width * height];
+
         let style = ProgressStyle::default_bar()
             .template(
                 "[{elapsed_precise}/{duration_precise}] [{bar:40.cyan/blue}] {pos}/{len}={percent}%",
             )
             .unwrap().progress_chars("##-");
-        for j in (0..self.target.height()).progress_with_style(style) {
-            for i in 0..self.target.width() {
-                for _s in 0..self.sample_per_pixel {
-                    let random_offset = [random::<f64>() - 0.5, random::<f64>() - 0.5];
-                    let relative_position = self.target.normalized_pixel_position(
-                        i as f64 + random_offset[0],
-                        j as f64 + random_offset[1],
-                    );
-                    //dbg!(relative_position);
-                    let ray = self.ray_through(relative_position);
-                    let color = Self::ray_color(&ray, world, max_depth);
-                    self.mixer.add(&color);
+
+        pixels
+            .chunks_mut(width)
+            .progress_with_style(style)
+            .enumerate()
+            .for_each(|(y, row)| {
+                for x in 0..width {
+                    let mut mixer = M::new();
+                    let rays = render_spec.ray_for_pixel(x as u32, y as u32);
+                    //dbg!(x, y);
+
+                    for ray in rays {
+                        //dbg!(ray.direction);
+                        let color = Self::ray_color(&ray, world, max_depth);
+                        mixer.add(&color);
+                    }
+
+                    let final_color = mixer.mix();
+                    row[x] = Rgb([
+                        (f64::sqrt(final_color.r()) * 255f64).trunc() as u8,
+                        (f64::sqrt(final_color.g()) * 255f64).trunc() as u8,
+                        (f64::sqrt(final_color.b()) * 255f64).trunc() as u8,
+                    ]);
                 }
-                self.target.set_pixel(j, i, &self.mixer.mix());
-            }
-        }
-        print!("{}", self.target);
+            });
+
+        ImageBuffer::from_raw(
+            size.width,
+            size.height,
+            pixels.into_iter().flat_map(|rgb| rgb.0.to_vec()).collect(),
+        )
+        .unwrap()
     }
 
     fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> Color {

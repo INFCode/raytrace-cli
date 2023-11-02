@@ -4,7 +4,7 @@ use crate::utils::Interval;
 use nalgebra::{Point3, Vector3};
 use std::boxed::Box;
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord>;
 }
 

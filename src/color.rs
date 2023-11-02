@@ -63,6 +63,7 @@ impl Display for Color {
 }
 
 pub trait ColorMixer {
+    fn new() -> Self;
     fn add(&mut self, c: &Color) -> &mut Self;
     fn mix(&mut self) -> Color;
 }
@@ -72,16 +73,13 @@ pub struct LinearMixer {
     total_color: usize,
 }
 
-impl LinearMixer {
-    pub fn new() -> Self {
+impl ColorMixer for LinearMixer {
+    fn new() -> Self {
         Self {
             color: vector![0f64, 0f64, 0f64],
             total_color: 0,
         }
     }
-}
-
-impl ColorMixer for LinearMixer {
     fn add(&mut self, c: &Color) -> &mut Self {
         for i in 0..3 {
             self.color[i] += c.color[i];
@@ -106,16 +104,14 @@ pub struct RMSMixer {
     total_color: usize,
 }
 
-impl RMSMixer {
-    pub fn new() -> Self {
+impl ColorMixer for RMSMixer {
+    fn new() -> Self {
         Self {
             color: vector![0f64, 0f64, 0f64],
             total_color: 0,
         }
     }
-}
 
-impl ColorMixer for RMSMixer {
     fn add(&mut self, c: &Color) -> &mut Self {
         for i in 0..3 {
             self.color[i] += c.color[i] * c.color[i];

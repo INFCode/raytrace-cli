@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 mod camera;
 mod color;
+mod light_source;
 mod materials;
 mod output;
 mod ray;
@@ -8,7 +9,8 @@ mod utils;
 mod world;
 
 use crate::camera::Camera;
-use crate::color::LinearMixer;
+use crate::color::{ColorMixer, LinearMixer};
+use crate::light_source::{ImageSize, PinHoleSpec};
 use crate::materials::Material;
 use crate::materials::{
     DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
@@ -46,12 +48,22 @@ fn main() {
 
     let image = ImageTarget::new(image_width, aspect_ratio);
     let mixer = LinearMixer::new();
+    let spec = PinHoleSpec::new(
+        spp,
+        120f64,
+        ImageSize {
+            width: 600,
+            height: 400,
+        },
+    );
 
     dbg!(image.width());
     dbg!(image.height());
     dbg!(image.actual_aspect_ratio());
     dbg!(image.theoretical_aspect_ratio());
-    let mut camera = Camera::new(2f64, 0.5f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
+    //let mut camera = Camera::new(2f64, 0.5f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
+    let camera = Camera::new(vector![0f64, 0f64, 0f64]);
 
-    camera.render(&world);
+    let buffer = camera.render::<LinearMixer, _, _>(&spec, &world);
+    buffer.save("test.png").unwrap();
 }

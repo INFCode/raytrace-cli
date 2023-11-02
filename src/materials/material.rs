@@ -9,7 +9,7 @@ pub struct ScatterRecord {
     pub scattered: Ray,
 }
 
-pub trait Material {
+pub trait Material: Sync {
     fn scatter(&self, ray: &Ray, hit: &HitRecord) -> Option<ScatterRecord>;
 }
 
