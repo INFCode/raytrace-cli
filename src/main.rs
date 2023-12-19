@@ -9,7 +9,7 @@ mod utils;
 mod world;
 
 use crate::camera::Camera;
-use crate::color::{ColorMixer, LinearMixer};
+use crate::color::LinearMixer;
 use crate::light_source::{ImageSize, PinHoleSpec};
 use crate::materials::Material;
 use crate::materials::{
@@ -47,10 +47,9 @@ fn main() {
     ];
 
     let image = ImageTarget::new(image_width, aspect_ratio);
-    let mixer = LinearMixer::new();
     let spec = PinHoleSpec::new(
         spp,
-        120f64,
+        135f64,
         ImageSize {
             width: 600,
             height: 400,
