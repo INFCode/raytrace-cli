@@ -7,7 +7,7 @@ use crate::ray::Ray;
 use crate::utils::Interval;
 use crate::world::Hittable;
 use image::{ImageBuffer, Rgb};
-use indicatif::{ProgressIterator, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressStyle};
 use rayon::prelude::*;
 
 pub struct Camera {
@@ -39,7 +39,7 @@ impl Camera {
             .unwrap().progress_chars("##-");
 
         pixels
-            .chunks_mut(width)
+            .par_chunks_mut(width)
             .progress_with_style(style)
             .enumerate()
             .for_each(|(y, row)| {
