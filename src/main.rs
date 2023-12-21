@@ -1,21 +1,21 @@
 #![allow(dead_code)]
 mod camera;
 mod color;
-mod light_source;
 mod materials;
 mod output;
 mod ray;
+mod render_spec;
 mod utils;
 mod world;
 
 use crate::camera::Camera;
 use crate::color::LinearMixer;
-use crate::light_source::{ImageSize, PinHoleSpec};
 use crate::materials::Material;
 use crate::materials::{
     DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
 };
 use crate::output::{ImageTarget, RenderTarget};
+use crate::render_spec::{ImageSize, PinHoleSpec};
 use crate::world::{Hittable, Sphere};
 use nalgebra::{vector, Point3, Vector3};
 

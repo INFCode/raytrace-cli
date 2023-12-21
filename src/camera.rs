@@ -2,8 +2,8 @@ use nalgebra::Vector3;
 
 use crate::color::Color;
 use crate::color::ColorMixer;
-use crate::light_source::RenderSpec;
 use crate::ray::Ray;
+use crate::render_spec::RenderSpec;
 use crate::utils::Interval;
 use crate::world::Hittable;
 use image::{ImageBuffer, Rgb};
