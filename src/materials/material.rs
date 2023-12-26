@@ -1,11 +1,11 @@
-use nalgebra::Vector3;
+use glam::DVec3;
 use std::boxed::Box;
 
 use crate::ray::Ray;
 use crate::world::hittable::HitRecord;
 
 pub struct ScatterRecord {
-    pub attenuation_factor: Vector3<f64>,
+    pub attenuation_factor: DVec3,
     pub scattered: Ray,
 }
 

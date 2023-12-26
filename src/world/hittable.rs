@@ -1,7 +1,7 @@
 use crate::materials::MaterialRef;
 use crate::ray::Ray;
 use crate::utils::Interval;
-use nalgebra::{Point3, Vector3};
+use glam::DVec3;
 use std::boxed::Box;
 
 pub trait Hittable: Sync {
@@ -9,21 +9,21 @@ pub trait Hittable: Sync {
 }
 
 pub struct HitRecord<'a> {
-    pub point: Point3<f64>,
+    pub point: DVec3,
     // Note that normal should unit vector.
     // TODO: Apply the Unit<> wrapper
-    pub normal: Vector3<f64>,
+    pub normal: DVec3,
     pub t: f64,
     pub is_front: bool,
     pub mat: MaterialRef<'a>,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(ray: &Ray, outward_normal: &Vector3<f64>, t: f64, mat: MaterialRef<'a>) -> Self {
+    pub fn new(ray: &Ray, outward_normal: DVec3, t: f64, mat: MaterialRef<'a>) -> Self {
         let is_front = ray.direction.dot(outward_normal) < 0f64;
         let normal = if is_front {
             // dereference here
-            *outward_normal
+            outward_normal
         } else {
             -outward_normal
         };

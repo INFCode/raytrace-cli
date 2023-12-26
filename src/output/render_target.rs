@@ -1,4 +1,4 @@
-use nalgebra::Point2;
+use glam::DVec2;
 use std::{
     fmt::{Display, Formatter, Result},
     usize,
@@ -27,16 +27,14 @@ pub trait RenderTarget: Display {
     fn set_pixel(&mut self, x: usize, y: usize, color: &Color);
 
     // Calculate the normalized or proportional position of a pixel.
-    fn normalized_pixel_position(&self, col: f64, row: f64) -> Point2<f64> {
-        Point2::new(
+    fn normalized_pixel_position(&self, col: f64, row: f64) -> DVec2 {
+        DVec2::new(
             (col + 0.5f64) / self.width() as f64,
             (row + 0.5f64) / self.height() as f64,
         )
     }
 }
 
-// Assuming you've imported necessary types, for example:
-// use nalgebra::Point2;
 pub struct ImageTarget {
     width: usize,
     height: usize,

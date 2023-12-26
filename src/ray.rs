@@ -1,18 +1,16 @@
-use nalgebra as na;
-
-use na::{Point3, Vector3};
+use glam::DVec3;
 
 pub struct Ray {
-    pub origin: Point3<f64>,
-    pub direction: Vector3<f64>,
+    pub origin: DVec3,
+    pub direction: DVec3,
 }
 
 impl Ray {
-    pub fn new(origin: Point3<f64>, direction: Vector3<f64>) -> Ray {
+    pub fn new(origin: DVec3, direction: DVec3) -> Ray {
         Ray { origin, direction }
     }
 
-    pub fn at(&self, t: f64) -> Point3<f64> {
+    pub fn at(&self, t: f64) -> DVec3 {
         self.origin + t * self.direction
     }
 }

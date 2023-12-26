@@ -1,4 +1,4 @@
-use nalgebra::Vector3;
+use glam::DVec3;
 
 use crate::color::Color;
 use crate::color::ColorMixer;
@@ -11,11 +11,11 @@ use indicatif::{ParallelProgressIterator, ProgressStyle};
 use rayon::prelude::*;
 
 pub struct Camera {
-    position: Vector3<f64>,
+    position: DVec3,
 }
 
 impl Camera {
-    pub fn new(position: Vector3<f64>) -> Self {
+    pub fn new(position: DVec3) -> Self {
         Self { position }
     }
 
@@ -81,7 +81,7 @@ impl Camera {
         if let Some(hit_rec) = world.hit(ray, &Interval::greater_than(eps)) {
             if let Some(scatter_rec) = hit_rec.mat.scatter(ray, &hit_rec) {
                 return Self::ray_color(&scatter_rec.scattered, world, depth - 1)
-                    .attenute(&scatter_rec.attenuation_factor);
+                    .attenute(scatter_rec.attenuation_factor);
             }
             // error color
             return Color::from_hex(0x6000a0);

@@ -1,7 +1,7 @@
 use std::iter::repeat_with;
 
 use crate::ray::Ray;
-use nalgebra::{point, vector};
+use glam::DVec3;
 use rand::random;
 
 #[derive(Copy, Clone)]
@@ -48,20 +48,20 @@ impl RenderSpec for PinHoleSpec {
     fn ray_for_pixel(&self, x: u32, y: u32) -> Box<dyn Iterator<Item = Ray> + '_> {
         // Generate and return an iterator over Rays for the given pixel
         // This is where you implement your ray generation logic
-        let base_vector = vector![
+        let base_vector = DVec3::new(
             x as f64 - self.resolution.width as f64 / 2f64 + 0.5f64,
             -(y as f64 - self.resolution.height as f64 / 2f64 + 0.5f64),
-            0f64
-        ] * self.pixel_tangent
-            + vector![0f64, 0f64, -1f64];
-        let origin = point![0f64, 0f64, 0f64];
+            0f64,
+        ) * self.pixel_tangent
+            + DVec3::new(0f64, 0f64, -1f64);
+        let origin = DVec3::ZERO;
 
         Box::new(
             repeat_with(move || Ray {
                 origin,
                 direction: base_vector
                     + self.pixel_tangent
-                        * vector![random::<f64>() - 0.5, random::<f64>() - 0.5, 0f64],
+                        * DVec3::new(random::<f64>() - 0.5, random::<f64>() - 0.5, 0f64),
             })
             .take(self.sample_per_pixel),
         )
@@ -71,7 +71,6 @@ impl RenderSpec for PinHoleSpec {
 #[cfg(test)]
 mod test {
     use super::*;
-    use nalgebra::Point3;
 
     #[test]
     fn test_pinhole() {
@@ -90,7 +89,7 @@ mod test {
         let mut num_rays = 0;
         for ray in rays {
             num_rays += 1;
-            assert_eq!(ray.origin, Point3::origin());
+            assert_eq!(ray.origin, DVec3::ZERO);
             let dir = ray.direction;
             dbg!(dir);
             assert!(0f64 <= dir[0] && dir[0] <= half_sqrt_2);

@@ -1,16 +1,16 @@
-use nalgebra::{vector, Vector3};
+use glam::DVec3;
 use std::default::Default;
 use std::fmt::Display;
 
 #[derive(Clone, Copy)]
 pub struct Color {
-    color: Vector3<f64>,
+    color: DVec3,
 }
 
 impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Self {
         Self {
-            color: vector![r, g, b],
+            color: DVec3::new(r, g, b),
         }
     }
     pub fn from_hex(hex: u32) -> Color {
@@ -21,7 +21,7 @@ impl Color {
         Self::new(r, g, b)
     }
 
-    pub fn from_vec(v: &Vector3<f64>) -> Color {
+    pub fn from_vec(v: &DVec3) -> Color {
         Color { color: v.clone() }
     }
     pub fn r(&self) -> f64 {
@@ -34,11 +34,11 @@ impl Color {
         self.color[2]
     }
 
-    pub fn attenute_mut(&mut self, scale: &Vector3<f64>) {
-        self.color.component_mul_assign(scale);
+    pub fn attenute_mut(&mut self, scale: DVec3) {
+        self.color *= scale;
     }
 
-    pub fn attenute(&self, scale: &Vector3<f64>) -> Self {
+    pub fn attenute(&self, scale: DVec3) -> Self {
         let mut copy = self.clone();
         copy.attenute_mut(scale);
         copy
@@ -69,14 +69,14 @@ pub trait ColorMixer {
 }
 
 pub struct LinearMixer {
-    color: Vector3<f64>,
+    color: DVec3,
     total_color: usize,
 }
 
 impl ColorMixer for LinearMixer {
     fn new() -> Self {
         Self {
-            color: vector![0f64, 0f64, 0f64],
+            color: DVec3::ZERO,
             total_color: 0,
         }
     }
@@ -93,21 +93,21 @@ impl ColorMixer for LinearMixer {
             self.color[i] /= self.total_color as f64;
         }
         let result = Color { color: self.color };
-        self.color = vector![0f64, 0f64, 0f64];
+        self.color = DVec3::ZERO;
         self.total_color = 0;
         result
     }
 }
 
 pub struct RMSMixer {
-    color: Vector3<f64>,
+    color: DVec3,
     total_color: usize,
 }
 
 impl ColorMixer for RMSMixer {
     fn new() -> Self {
         Self {
-            color: vector![0f64, 0f64, 0f64],
+            color: DVec3::ZERO,
             total_color: 0,
         }
     }
@@ -125,7 +125,7 @@ impl ColorMixer for RMSMixer {
             self.color[i] = (self.color[i] / self.total_color as f64).sqrt();
         }
         let result = Color { color: self.color };
-        self.color = vector![0f64, 0f64, 0f64];
+        self.color = DVec3::ZERO;
         self.total_color = 0;
         result
     }
