@@ -1,4 +1,4 @@
-use raytrace_cli::color::{Color, ColorMixer, LinearMixer, RMSMixer};
+use raytrace_cli::color::{ColorMixer, LinearMixer, LinearRgbColor, RMSMixer};
 
 fn main() {
     let block_width = 64;
@@ -13,14 +13,38 @@ fn main() {
     print!("P3\n{} {}\n255\n", width, height);
 
     let colors = [
-        [Color::from_hex(0xff0000), Color::from_hex(0x00ff00)],
-        [Color::from_hex(0xffffff), Color::from_hex(0x000000)],
-        [Color::from_hex(0x8000a0), Color::from_hex(0x2f4f00)],
-        [Color::from_hex(0xaabeef), Color::from_hex(0xc00100)],
-        [Color::from_hex(0xcf0000), Color::from_hex(0x10f010)],
-        [Color::from_hex(0x3aaa11), Color::from_hex(0xff0000)],
-        [Color::from_hex(0x1f3f5f), Color::from_hex(0x10ff70)],
-        [Color::from_hex(0xff1030), Color::from_hex(0x4090aa)],
+        [
+            LinearRgbColor::from_hex(0xff0000),
+            LinearRgbColor::from_hex(0x00ff00),
+        ],
+        [
+            LinearRgbColor::from_hex(0xffffff),
+            LinearRgbColor::from_hex(0x000000),
+        ],
+        [
+            LinearRgbColor::from_hex(0x8000a0),
+            LinearRgbColor::from_hex(0x2f4f00),
+        ],
+        [
+            LinearRgbColor::from_hex(0xaabeef),
+            LinearRgbColor::from_hex(0xc00100),
+        ],
+        [
+            LinearRgbColor::from_hex(0xcf0000),
+            LinearRgbColor::from_hex(0x10f010),
+        ],
+        [
+            LinearRgbColor::from_hex(0x3aaa11),
+            LinearRgbColor::from_hex(0xff0000),
+        ],
+        [
+            LinearRgbColor::from_hex(0x1f3f5f),
+            LinearRgbColor::from_hex(0x10ff70),
+        ],
+        [
+            LinearRgbColor::from_hex(0xff1030),
+            LinearRgbColor::from_hex(0x4090aa),
+        ],
     ];
     let mut mixed = vec![];
 
@@ -53,7 +77,7 @@ fn main() {
         }
         for _ in 0..line_width {
             for _ in 0..width {
-                println!("{}", Color::from_hex(0x000000));
+                println!("{}", LinearRgbColor::from_hex(0x000000));
             }
         }
     }

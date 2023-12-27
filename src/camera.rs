@@ -1,7 +1,7 @@
 use glam::DVec3;
 
-use crate::color::Color;
 use crate::color::ColorMixer;
+use crate::color::LinearRgbColor;
 use crate::ray::Ray;
 use crate::render_spec::RenderSpec;
 use crate::utils::Interval;
@@ -55,11 +55,7 @@ impl Camera {
                     }
 
                     let final_color = mixer.mix();
-                    row[x] = Rgb([
-                        (f64::sqrt(final_color.r()) * 255f64).trunc() as u8,
-                        (f64::sqrt(final_color.g()) * 255f64).trunc() as u8,
-                        (f64::sqrt(final_color.b()) * 255f64).trunc() as u8,
-                    ]);
+                    row[x] = final_color.into();
                 }
             });
 
@@ -71,10 +67,10 @@ impl Camera {
         .unwrap()
     }
 
-    fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> Color {
+    fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> LinearRgbColor {
         if depth <= 0 {
             // too many reflections, no light remaining
-            return Color::from_hex(0x000000);
+            return LinearRgbColor::from_hex(0x000000);
         }
         // add a small eps to fix shadow acne
         let eps = 0.001;
@@ -84,14 +80,14 @@ impl Camera {
                     .attenute(scatter_rec.attenuation_factor);
             }
             // error color
-            return Color::from_hex(0x6000a0);
+            return LinearRgbColor::from_hex(0x6000a0);
         }
         // miss, background color
         let dir = ray.direction.normalize();
         let t = 0.5 * (dir.y + 1f64);
-        Color::lerp(
-            &Color::new(1f64, 1f64, 1f64),
-            &Color::new(0.5f64, 0.7f64, 1.0f64),
+        LinearRgbColor::lerp(
+            &LinearRgbColor::new(1f64, 1f64, 1f64),
+            &LinearRgbColor::new(0.5f64, 0.7f64, 1.0f64),
             t,
         )
     }

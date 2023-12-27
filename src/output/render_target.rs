@@ -4,7 +4,7 @@ use std::{
     usize,
 };
 
-use crate::color::Color;
+use crate::color::LinearRgbColor;
 
 pub trait RenderTarget: Display {
     // Get the width of the image.
@@ -24,7 +24,7 @@ pub trait RenderTarget: Display {
     }
 
     // Set a specific pixel.
-    fn set_pixel(&mut self, x: usize, y: usize, color: &Color);
+    fn set_pixel(&mut self, x: usize, y: usize, color: &LinearRgbColor);
 
     // Calculate the normalized or proportional position of a pixel.
     fn normalized_pixel_position(&self, col: f64, row: f64) -> DVec2 {
@@ -39,7 +39,7 @@ pub struct ImageTarget {
     width: usize,
     height: usize,
     aspect_ratio: f64,
-    buffer: Vec<Color>,
+    buffer: Vec<LinearRgbColor>,
 }
 
 impl ImageTarget {
@@ -48,7 +48,7 @@ impl ImageTarget {
         if height < 1 {
             height = 1;
         }
-        let buffer = vec![Color::default(); width * height];
+        let buffer = vec![LinearRgbColor::default(); width * height];
         ImageTarget {
             width,
             height,
@@ -81,7 +81,7 @@ impl RenderTarget for ImageTarget {
         self.aspect_ratio
     }
 
-    fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
+    fn set_pixel(&mut self, x: usize, y: usize, color: &LinearRgbColor) {
         // assume it's given in order
         self.buffer[x * self.width + y] = *color;
     }
@@ -93,7 +93,7 @@ pub struct TerminalTarget {
     aspect_ratio: f64,
     character_width: usize,
     character_height: usize,
-    buffer: Vec<Color>,
+    buffer: Vec<LinearRgbColor>,
 }
 
 impl TerminalTarget {
@@ -107,7 +107,7 @@ impl TerminalTarget {
         if height < 1 {
             height = 1;
         }
-        let buffer = vec![Color::default(); width * height];
+        let buffer = vec![LinearRgbColor::default(); width * height];
         TerminalTarget {
             width,
             height,
@@ -141,7 +141,7 @@ impl RenderTarget for TerminalTarget {
         self.aspect_ratio
     }
 
-    fn set_pixel(&mut self, x: usize, y: usize, color: &Color) {
+    fn set_pixel(&mut self, x: usize, y: usize, color: &LinearRgbColor) {
         self.buffer[x * self.width + y] = *color;
     }
 }

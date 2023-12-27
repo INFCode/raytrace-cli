@@ -1,19 +1,20 @@
 use glam::DVec3;
+use image::Rgb;
 use std::default::Default;
 use std::fmt::Display;
 
 #[derive(Clone, Copy)]
-pub struct Color {
+pub struct LinearRgbColor {
     color: DVec3,
 }
 
-impl Color {
+impl LinearRgbColor {
     pub fn new(r: f64, g: f64, b: f64) -> Self {
         Self {
             color: DVec3::new(r, g, b),
         }
     }
-    pub fn from_hex(hex: u32) -> Color {
+    pub fn from_hex(hex: u32) -> LinearRgbColor {
         let mask = 0xff;
         let b = (hex & mask) as f64 / 256f64;
         let g = ((hex >> 8) & mask) as f64 / 256f64;
@@ -21,8 +22,8 @@ impl Color {
         Self::new(r, g, b)
     }
 
-    pub fn from_vec(v: &DVec3) -> Color {
-        Color { color: v.clone() }
+    pub fn from_vec(v: &DVec3) -> LinearRgbColor {
+        LinearRgbColor { color: v.clone() }
     }
     pub fn r(&self) -> f64 {
         self.color[0]
@@ -44,15 +45,15 @@ impl Color {
         copy
     }
 
-    pub fn lerp(c1: &Color, c2: &Color, t: f64) -> Color {
+    pub fn lerp(c1: &LinearRgbColor, c2: &LinearRgbColor, t: f64) -> LinearRgbColor {
         let r = c1.r() * (1f64 - t) + c2.r() * t;
         let g = c1.g() * (1f64 - t) + c2.g() * t;
         let b = c1.b() * (1f64 - t) + c2.b() * t;
-        Color::new(r, g, b)
+        LinearRgbColor::new(r, g, b)
     }
 }
 
-impl Display for Color {
+impl Display for LinearRgbColor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ri = (255.999 * f64::sqrt(self.r())).trunc() as i64;
         let gi = (255.999 * f64::sqrt(self.g())).trunc() as i64;
@@ -64,8 +65,8 @@ impl Display for Color {
 
 pub trait ColorMixer {
     fn new() -> Self;
-    fn add(&mut self, c: &Color) -> &mut Self;
-    fn mix(&mut self) -> Color;
+    fn add(&mut self, c: &LinearRgbColor) -> &mut Self;
+    fn mix(&mut self) -> LinearRgbColor;
 }
 
 pub struct LinearMixer {
@@ -80,7 +81,7 @@ impl ColorMixer for LinearMixer {
             total_color: 0,
         }
     }
-    fn add(&mut self, c: &Color) -> &mut Self {
+    fn add(&mut self, c: &LinearRgbColor) -> &mut Self {
         for i in 0..3 {
             self.color[i] += c.color[i];
         }
@@ -88,11 +89,11 @@ impl ColorMixer for LinearMixer {
         self
     }
 
-    fn mix(&mut self) -> Color {
+    fn mix(&mut self) -> LinearRgbColor {
         for i in 0..3 {
             self.color[i] /= self.total_color as f64;
         }
-        let result = Color { color: self.color };
+        let result = LinearRgbColor { color: self.color };
         self.color = DVec3::ZERO;
         self.total_color = 0;
         result
@@ -112,7 +113,7 @@ impl ColorMixer for RMSMixer {
         }
     }
 
-    fn add(&mut self, c: &Color) -> &mut Self {
+    fn add(&mut self, c: &LinearRgbColor) -> &mut Self {
         for i in 0..3 {
             self.color[i] += c.color[i] * c.color[i];
         }
@@ -120,20 +121,31 @@ impl ColorMixer for RMSMixer {
         self
     }
 
-    fn mix(&mut self) -> Color {
+    fn mix(&mut self) -> LinearRgbColor {
         for i in 0..3 {
             self.color[i] = (self.color[i] / self.total_color as f64).sqrt();
         }
-        let result = Color { color: self.color };
+        let result = LinearRgbColor { color: self.color };
         self.color = DVec3::ZERO;
         self.total_color = 0;
         result
     }
 }
 
-impl Default for Color {
+impl Default for LinearRgbColor {
     fn default() -> Self {
         // default to black
         Self::from_hex(0x0)
+    }
+}
+
+impl Into<image::Rgb<u8>> for LinearRgbColor {
+    fn into(self) -> image::Rgb<u8> {
+        // image::Rgb assumes sRGB color, use gamma = 2 here.
+        Rgb([
+            (f64::sqrt(self.r()) * 255f64).trunc() as u8,
+            (f64::sqrt(self.g()) * 255f64).trunc() as u8,
+            (f64::sqrt(self.b()) * 255f64).trunc() as u8,
+        ])
     }
 }
