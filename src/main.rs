@@ -58,6 +58,6 @@ fn main() {
         Box::new(gnd) as Box<dyn Hittable>,
     ];
 
-    let buffer = camera.render::<LinearMixer, _, _>(&spec, &world);
+    let buffer = camera.render::<LinearMixer>(&spec, &world);
     buffer.save("test.png").unwrap();
 }

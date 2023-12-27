@@ -19,10 +19,10 @@ impl Camera {
         Self { position }
     }
 
-    pub fn render<M: ColorMixer, R: RenderSpec, W: Hittable>(
+    pub fn render<M: ColorMixer>(
         &self,
-        render_spec: &R,
-        world: &W,
+        render_spec: &impl RenderSpec,
+        world: &impl Hittable,
     ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let size = render_spec.image_size();
         let width = size.width as usize;
