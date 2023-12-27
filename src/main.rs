@@ -14,18 +14,26 @@ use crate::materials::Material;
 use crate::materials::{
     DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
 };
-use crate::output::{ImageTarget, RenderTarget};
 use crate::render_spec::{ImageSize, PinHoleSpec};
 use crate::world::{Hittable, Sphere};
 use glam::DVec3;
 
 fn main() {
-    // Image
-    let image_width = 1200;
-    let aspect_ratio = 4f64 / 3f64;
-
     let spp = 500;
+    let fov = 135f64;
 
+    let spec = PinHoleSpec::new(
+        spp,
+        fov,
+        ImageSize {
+            width: 600,
+            height: 400,
+        },
+    );
+
+    let camera = Camera::new(DVec3::ZERO);
+
+    // materials
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
     let lambertian =
         Box::new(LambertianMaterial::new(DVec3::new(0.2, 0.8, 0.1))) as Box<dyn Material>;
@@ -34,12 +42,14 @@ fn main() {
         Box::new(MetalMaterial::new(DVec3::new(0.8, 0.6, 0.2), 0.6)) as Box<dyn Material>;
     let dielectric = Box::new(DielectricMaterial::new(1.5)) as Box<dyn Material>;
 
+    // objects
     let s1 = Sphere::new(DVec3::new(0f64, 0f64, -1f64), 0.5, &lambertian);
     let s2 = Sphere::new(DVec3::new(-1f64, 0f64, -1f64), 0.5, &dielectric);
     let s3 = Sphere::new(DVec3::new(1f64, 0f64, -1f64), 0.5, &metal_fuzz);
     let s4 = Sphere::new(DVec3::new(0f64, 1f64, -1f64), 0.5, &metal);
     let gnd = Sphere::new(DVec3::new(0f64, -100.5, -1f64), 100f64, &simple);
 
+    // world
     let world = vec![
         Box::new(s1) as Box<dyn Hittable>,
         Box::new(s2) as Box<dyn Hittable>,
@@ -47,23 +57,6 @@ fn main() {
         Box::new(s4) as Box<dyn Hittable>,
         Box::new(gnd) as Box<dyn Hittable>,
     ];
-
-    let image = ImageTarget::new(image_width, aspect_ratio);
-    let spec = PinHoleSpec::new(
-        spp,
-        135f64,
-        ImageSize {
-            width: 600,
-            height: 400,
-        },
-    );
-
-    dbg!(image.width());
-    dbg!(image.height());
-    dbg!(image.actual_aspect_ratio());
-    dbg!(image.theoretical_aspect_ratio());
-    //let mut camera = Camera::new(2f64, 0.5f64, vector![0f64, 0f64, 0f64], image, spp, mixer);
-    let camera = Camera::new(DVec3::ZERO);
 
     let buffer = camera.render::<LinearMixer, _, _>(&spec, &world);
     buffer.save("test.png").unwrap();
