@@ -5,11 +5,11 @@ use std::io::Read;
 use std::path::Path;
 
 const SIZE: f32 = 20.0;
-const BLURRED_SHAPE: (u32, u32) = (4, 4);
-const BLURRED_SHAPE_SIZE: usize = (BLURRED_SHAPE.0 * BLURRED_SHAPE.1) as usize;
+pub const BLURRED_SHAPE: (u32, u32) = (4, 8);
+pub const BLURRED_SHAPE_SIZE: usize = (BLURRED_SHAPE.0 * BLURRED_SHAPE.1) as usize;
 
 //type GlyphPixel = SVector<u8, BLURRED_SHAPE_SIZE>;
-type GlyphPixel = [u8; BLURRED_SHAPE_SIZE];
+pub type GlyphPixel = [u8; BLURRED_SHAPE_SIZE];
 
 pub struct GlyphPalette {
     glyph_to_char: Vec<(GlyphPixel, char)>,
@@ -36,6 +36,7 @@ impl GlyphPalette {
 
     fn font_to_glyph_pixels(font: &Font) -> Vec<(GlyphPixel, char)> {
         let mut result = vec![];
+        // Currently only use Ascii codes
         for i in 0..127 {
             if let Some(c) = std::char::from_u32(i) {
                 if c == ' ' || c.is_ascii_graphic() {
@@ -44,6 +45,10 @@ impl GlyphPalette {
                 }
             }
         }
+        //for (pix, c) in result.iter() {
+        //    println!("{c} => ");
+        //    Self::print_glyph_pixel(pix);
+        //}
         result
     }
 
@@ -60,7 +65,7 @@ impl GlyphPalette {
         )
         .unwrap();
 
-        // Down-scaling to 4x4
+        // Down-scaling
         let small_blurred = imageops::resize(
             &glyph_image,
             BLURRED_SHAPE.0,
@@ -72,8 +77,8 @@ impl GlyphPalette {
     }
 
     pub fn print_glyph_pixel(glyph_pixel: &GlyphPixel) {
-        for y in 0..BLURRED_SHAPE.0 {
-            for x in 0..BLURRED_SHAPE.1 {
+        for y in 0..BLURRED_SHAPE.1 {
+            for x in 0..BLURRED_SHAPE.0 {
                 let char_s = glyph_pixel[(x + y * BLURRED_SHAPE.0) as usize];
                 print!("\x1B[48;2;{};{};{}m   ", char_s, char_s, char_s);
             }
@@ -81,8 +86,8 @@ impl GlyphPalette {
         }
     }
 
-    fn match_char(&self, pattern: &GlyphPixel) -> char {
-        let mut best_dist = 0f64;
+    pub fn match_char(&self, pattern: &GlyphPixel) -> char {
+        let mut best_dist = f64::INFINITY;
         let mut best_char = self.glyph_to_char[0].1;
         for (v, c) in self.glyph_to_char.iter() {
             let sq_dist = Self::pixel_similarity(pattern, v);

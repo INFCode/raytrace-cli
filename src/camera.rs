@@ -12,11 +12,15 @@ use rayon::prelude::*;
 
 pub struct Camera {
     position: DVec3,
+    max_depth: u32,
 }
 
 impl Camera {
     pub fn new(position: DVec3) -> Self {
-        Self { position }
+        Self {
+            position,
+            max_depth: 10,
+        }
     }
 
     pub fn render<M: ColorMixer>(
@@ -27,7 +31,6 @@ impl Camera {
         let size = render_spec.image_size();
         let width = size.width as usize;
         let height = size.height as usize;
-        let max_depth = 10;
 
         // Pre-allocating a flat vector to hold all pixel data
         let mut pixels = vec![Rgb([0, 0, 0]); width * height];
@@ -44,18 +47,9 @@ impl Camera {
             .enumerate()
             .for_each(|(y, row)| {
                 for x in 0..width {
-                    let mut mixer = M::new();
-                    let rays = render_spec.ray_for_pixel(x as u32, y as u32);
-                    //dbg!(x, y);
-
-                    for ray in rays {
-                        //dbg!(ray.direction);
-                        let color = Self::ray_color(&ray, world, max_depth);
-                        mixer.add(&color);
-                    }
-
-                    let final_color = mixer.mix();
-                    row[x] = final_color.into();
+                    row[x] = self
+                        .render_pixel(&mut M::new(), render_spec, world, x as u32, y as u32)
+                        .into();
                 }
             });
 
@@ -67,7 +61,25 @@ impl Camera {
         .unwrap()
     }
 
-    fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: i32) -> LinearRgbColor {
+    fn render_pixel(
+        &self,
+        mixer: &mut impl ColorMixer,
+        render_spec: &impl RenderSpec,
+        world: &impl Hittable,
+        x: u32,
+        y: u32,
+    ) -> LinearRgbColor {
+        let rays = render_spec.ray_for_pixel(x, y);
+
+        for ray in rays {
+            let color = Self::ray_color(&ray, world, self.max_depth);
+            mixer.add(&color);
+        }
+
+        mixer.mix()
+    }
+
+    fn ray_color<W: Hittable>(ray: &Ray, world: &W, depth: u32) -> LinearRgbColor {
         if depth <= 0 {
             // too many reflections, no light remaining
             return LinearRgbColor::from_hex(0x000000);
