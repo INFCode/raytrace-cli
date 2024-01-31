@@ -16,7 +16,7 @@ use crate::materials::{
 };
 use crate::output::{AsciiArtSaver, ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
-use crate::world::{Hittable, Sphere};
+use crate::world::{Hittable, InfinitePlane, Sphere};
 use glam::{DQuat, DVec3};
 
 fn main() {
@@ -34,7 +34,7 @@ fn main() {
 
     let camera = Camera::new(
         DVec3::ZERO,
-        DQuat::from_euler(glam::EulerRot::XYZ, 30f64.to_radians(), 0f64, 0f64),
+        DQuat::from_euler(glam::EulerRot::XYZ, -15f64.to_radians(), 0f64, 0f64),
     );
 
     // materials
@@ -51,7 +51,12 @@ fn main() {
     let s2 = Sphere::new(DVec3::new(-1f64, 0f64, -1f64), 0.5, &dielectric);
     let s3 = Sphere::new(DVec3::new(1f64, 0f64, -1f64), 0.5, &metal_fuzz);
     let s4 = Sphere::new(DVec3::new(0f64, 1f64, -1f64), 0.5, &metal);
-    let gnd = Sphere::new(DVec3::new(0f64, -100.5, -1f64), 100f64, &simple);
+    //let gnd = Sphere::new(DVec3::new(0f64, -100.5, -1f64), 100f64, &simple);
+    let gnd = InfinitePlane::new(
+        DVec3::new(0f64, -1.5, 0f64),
+        DVec3::new(0f64, 1f64, 0f64),
+        &simple,
+    );
 
     // world
     let world = vec![
