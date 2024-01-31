@@ -5,7 +5,7 @@ use image::{imageops, EncodableLayout, GenericImageView, ImageBuffer, Pixel, Pix
 use super::character::{GlyphPalette, GlyphPixel, BLURRED_SHAPE, BLURRED_SHAPE_SIZE};
 
 pub trait ImageSaver {
-    fn save_to<P, C>(&self, buff: ImageBuffer<P, C>, path: impl AsRef<Path>)
+    fn save_to<P, C>(&self, buff: &ImageBuffer<P, C>, path: impl AsRef<Path>)
     where
         [P::Subpixel]: EncodableLayout,
         C: Deref<Target = [P::Subpixel]>,
@@ -21,7 +21,7 @@ impl ImageFormatsSaver {
 }
 
 impl ImageSaver for ImageFormatsSaver {
-    fn save_to<P, C>(&self, buff: ImageBuffer<P, C>, path: impl AsRef<Path>)
+    fn save_to<P, C>(&self, buff: &ImageBuffer<P, C>, path: impl AsRef<Path>)
     where
         [P::Subpixel]: EncodableLayout,
         C: Deref<Target = [P::Subpixel]>,
@@ -70,7 +70,7 @@ fn subpixel_to_u8<T: image::Primitive>(subpixel: T) -> u8 {
 }
 
 impl ImageSaver for AsciiArtSaver {
-    fn save_to<P, C>(&self, buff: ImageBuffer<P, C>, path: impl AsRef<Path>)
+    fn save_to<P, C>(&self, buff: &ImageBuffer<P, C>, path: impl AsRef<Path>)
     where
         [P::Subpixel]: EncodableLayout,
         C: Deref<Target = [P::Subpixel]>,

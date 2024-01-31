@@ -14,7 +14,7 @@ use crate::materials::Material;
 use crate::materials::{
     DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
 };
-use crate::output::{AsciiArtSaver, ImageSaver};
+use crate::output::{AsciiArtSaver, ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
 use crate::world::{Hittable, Sphere};
 use glam::DVec3;
@@ -60,9 +60,9 @@ fn main() {
     ];
 
     let buffer = camera.render::<LinearMixer>(&spec, &world);
-    buffer.save("test.png").unwrap();
-    //let saver = ImageFormatsSaver::new();
+    //buffer.save("test.png").unwrap();
+    let saver = ImageFormatsSaver::new();
     let ascii_saver = AsciiArtSaver::new("/usr/share/fonts/consolas-with-yahei/consnerd.ttf");
-    //saver.save_to(buffer, "test_saver.png");
-    ascii_saver.save_to(buffer, "ascii.out");
+    saver.save_to(&buffer, "test_saver.png");
+    ascii_saver.save_to(&buffer, "ascii.out");
 }
