@@ -17,7 +17,7 @@ use crate::materials::{
 use crate::output::{AsciiArtSaver, ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
 use crate::world::{Hittable, Sphere};
-use glam::DVec3;
+use glam::{DQuat, DVec3};
 
 fn main() {
     let spp = 500;
@@ -32,7 +32,10 @@ fn main() {
         },
     );
 
-    let camera = Camera::new(DVec3::ZERO);
+    let camera = Camera::new(
+        DVec3::ZERO,
+        DQuat::from_euler(glam::EulerRot::XYZ, 30f64.to_radians(), 0f64, 0f64),
+    );
 
     // materials
     let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;

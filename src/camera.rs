@@ -1,3 +1,4 @@
+use glam::DQuat;
 use glam::DVec3;
 
 use crate::color::ColorMixer;
@@ -11,13 +12,15 @@ use indicatif::{ParallelProgressIterator, ProgressStyle};
 use rayon::prelude::*;
 
 pub struct Camera {
+    rotation: DQuat,
     position: DVec3,
     max_depth: u32,
 }
 
 impl Camera {
-    pub fn new(position: DVec3) -> Self {
+    pub fn new(position: DVec3, rotation: DQuat) -> Self {
         Self {
+            rotation,
             position,
             max_depth: 10,
         }
@@ -72,7 +75,11 @@ impl Camera {
         let rays = render_spec.ray_for_pixel(x, y);
 
         for ray in rays {
-            let color = Self::ray_color(&ray, world, self.max_depth);
+            let rotated_ray = Ray {
+                direction: self.rotation * ray.direction,
+                ..ray
+            };
+            let color = Self::ray_color(&rotated_ray, world, self.max_depth);
             mixer.add(&color);
         }
 
