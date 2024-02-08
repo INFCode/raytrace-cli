@@ -14,10 +14,10 @@ use crate::materials::Material;
 use crate::materials::{
     DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
 };
-use crate::output::{AsciiArtSaver, ImageFormatsSaver, ImageSaver};
+use crate::output::{ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
-use crate::world::{Hittable, InfinitePlane, Sphere};
-use glam::{DQuat, DVec3};
+use crate::world::{Hittable, InfinitePlane, Rectangle, Sphere};
+use glam::{DQuat, DVec3, EulerRot};
 
 fn main() {
     let spp = 500;
@@ -58,6 +58,14 @@ fn main() {
         &simple,
     );
 
+    let mirror = Rectangle::new(
+        DVec3::new(-1f64, 1.5, -1f64),
+        DQuat::from_euler(EulerRot::XYZ, 0f64, 0f64, -135f64.to_radians()),
+        2.5f64,
+        2.5f64,
+        &simple,
+    );
+
     // world
     let world = vec![
         Box::new(s1) as Box<dyn Hittable>,
@@ -65,12 +73,13 @@ fn main() {
         Box::new(s3) as Box<dyn Hittable>,
         Box::new(s4) as Box<dyn Hittable>,
         Box::new(gnd) as Box<dyn Hittable>,
+        Box::new(mirror) as Box<dyn Hittable>,
     ];
 
     let buffer = camera.render::<LinearMixer>(&spec, &world);
     //buffer.save("test.png").unwrap();
     let saver = ImageFormatsSaver::new();
-    let ascii_saver = AsciiArtSaver::new("/usr/share/fonts/consolas-with-yahei/consnerd.ttf");
+    //let ascii_saver = AsciiArtSaver::new("/usr/share/fonts/consolas-with-yahei/consnerd.ttf");
     saver.save_to(&buffer, "test_saver.png");
-    ascii_saver.save_to(&buffer, "ascii.out");
+    //ascii_saver.save_to(&buffer, "ascii.out");
 }
