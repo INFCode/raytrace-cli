@@ -2,6 +2,8 @@ use super::hittable::{HitRecord, Hittable};
 use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
 use glam::{DQuat, DVec3};
 
+fn plenary_hit() {}
+
 pub struct Rectangle<'a> {
     position: DVec3,
     normal: DVec3,
@@ -173,5 +175,86 @@ impl<'a> Hittable for InfinitePlane<'a> {
             // parallel, no intersection
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod infinite_plane_tests {
+    use super::*;
+    use crate::test_utils::material::DummyMaterial;
+
+    #[test]
+    fn ray_from_below_misses() {
+        let material = DummyMaterial::new_box();
+        let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
+        let ray = Ray {
+            origin: DVec3::NEG_Y,
+            direction: DVec3::Y,
+        };
+        let available_range = Interval::new(0f64, 2f64);
+        assert!(
+            plane.hit(&ray, &available_range).is_none(),
+            "Ray from below should not hit the plane"
+        );
+    }
+
+    #[test]
+    fn parallel_ray_misses() {
+        let material = DummyMaterial::new_box();
+        let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
+        let ray_parallel = Ray {
+            origin: DVec3::NEG_Y,
+            direction: DVec3::X,
+        };
+        let available_range = Interval::new(0f64, 2f64);
+        assert!(
+            plane.hit(&ray_parallel, &available_range).is_none(),
+            "Parallel ray should not hit the plane"
+        );
+    }
+
+    #[test]
+    fn ray_pointing_away_misses() {
+        let material = DummyMaterial::new_box();
+        let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
+        let ray_away = Ray {
+            origin: DVec3::Y,
+            direction: DVec3::Y,
+        };
+        let available_range = Interval::new(0f64, 2f64);
+        assert!(
+            plane.hit(&ray_away, &available_range).is_none(),
+            "Ray pointing away should not hit the plane"
+        );
+    }
+
+    #[test]
+    fn plane_out_of_range_misses() {
+        let material = DummyMaterial::new_box();
+        let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
+        let ray_on_plane = Ray {
+            origin: DVec3::new(0.0, 10.0, 0.0),
+            direction: DVec3::NEG_Y,
+        };
+        let available_range = Interval::new(0f64, 2f64);
+        assert!(
+            plane.hit(&ray_on_plane, &available_range).is_none(),
+            "Plane out of range should not be hit"
+        );
+    }
+
+    #[test]
+    fn hit_ray_towards_plane() {
+        let material = DummyMaterial::new_box();
+        let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
+        let ray_on_plane = Ray {
+            origin: DVec3::Y,
+            direction: DVec3::NEG_Y,
+        };
+        let available_range = Interval::new(0f64, 2f64);
+        assert!(
+            plane.hit(&ray_on_plane, &available_range).is_some(),
+            "Ray should hit the plane when facing towards it"
+        );
     }
 }

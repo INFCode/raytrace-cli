@@ -5,6 +5,8 @@ mod materials;
 mod output;
 mod ray;
 mod render_spec;
+#[cfg(test)]
+mod test_utils;
 mod utils;
 mod world;
 
