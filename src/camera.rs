@@ -77,7 +77,7 @@ impl Camera {
         for ray in rays {
             let rotated_ray = Ray {
                 direction: self.rotation * ray.direction,
-                ..ray
+                origin: self.position + ray.origin,
             };
             let color = Self::ray_color(&rotated_ray, world, self.max_depth);
             mixer.add(&color);

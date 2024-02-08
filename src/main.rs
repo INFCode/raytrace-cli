@@ -33,8 +33,8 @@ fn main() {
     );
 
     let camera = Camera::new(
-        DVec3::ZERO,
-        DQuat::from_euler(glam::EulerRot::XYZ, -15f64.to_radians(), 0f64, 0f64),
+        DVec3::Z * 0.3,
+        DQuat::from_euler(glam::EulerRot::XYZ, 15f64.to_radians(), 0f64, 0f64),
     );
 
     // materials
