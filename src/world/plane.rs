@@ -73,8 +73,8 @@ impl<'a> Hittable for Rectangle<'a> {
 #[cfg(test)]
 mod finite_plane_tests {
     use super::*;
-    use crate::materials::SimpleDiffuseMaterial;
-    use crate::{materials::Material, ray::Ray, utils::Interval};
+    use crate::test_utils::material::DummyMaterial;
+    use crate::{ray::Ray, utils::Interval};
     use rand::{
         distributions::{Distribution, Uniform},
         rngs::StdRng,
@@ -83,7 +83,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_parallel() {
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 10f64, 10f64, &material);
 
         let ray = Ray::new(DVec3::Y, DVec3::X);
@@ -93,7 +93,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_from_back_side() {
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 10f64, 10f64, &material);
 
         // Upward vector
@@ -104,7 +104,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_outside_region() {
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 2f64, 2f64, &material);
 
         // almost inside the region
@@ -118,7 +118,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_inside_region() {
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 2f64, 2f64, &material);
 
         // almost outside the region
@@ -185,7 +185,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn ray_from_below_misses() {
-        let material = DummyMaterial::new_box();
+        let material = DummyMaterial::new_boxed();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray = Ray {
             origin: DVec3::NEG_Y,
@@ -200,7 +200,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn parallel_ray_misses() {
-        let material = DummyMaterial::new_box();
+        let material = DummyMaterial::new_boxed();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_parallel = Ray {
             origin: DVec3::NEG_Y,
@@ -215,7 +215,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn ray_pointing_away_misses() {
-        let material = DummyMaterial::new_box();
+        let material = DummyMaterial::new_boxed();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_away = Ray {
             origin: DVec3::Y,
@@ -230,7 +230,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn plane_out_of_range_misses() {
-        let material = DummyMaterial::new_box();
+        let material = DummyMaterial::new_boxed();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_on_plane = Ray {
             origin: DVec3::new(0.0, 10.0, 0.0),
@@ -245,7 +245,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn hit_ray_towards_plane() {
-        let material = DummyMaterial::new_box();
+        let material = DummyMaterial::new_boxed();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_on_plane = Ray {
             origin: DVec3::Y,

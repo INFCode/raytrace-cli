@@ -60,14 +60,14 @@ impl<'a> Hittable for Sphere<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::materials::SimpleDiffuseMaterial;
-    use crate::{materials::Material, ray::Ray, utils::Interval};
+    use crate::test_utils::material::DummyMaterial;
+    use crate::{ray::Ray, utils::Interval};
 
     #[test]
     fn test_hit_from_outside_sphere() {
         let sphere_center = DVec3::new(0.0, 0.0, 0.0);
         let sphere_radius = 1.0;
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);
@@ -83,7 +83,7 @@ mod tests {
     fn test_miss_from_outside_sphere() {
         let sphere_center = DVec3::new(0.0, 0.0, 0.0);
         let sphere_radius = 1.0;
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 2.0, 0.0);
@@ -99,7 +99,7 @@ mod tests {
     fn test_hit_from_inside_sphere() {
         let sphere_center = DVec3::new(0.0, 0.0, 0.0);
         let sphere_radius = 2.0;
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(0.0, 0.0, 0.0);
@@ -115,7 +115,7 @@ mod tests {
     fn test_hit_with_limited_range() {
         let sphere_center = DVec3::new(0.0, 0.0, 0.0);
         let sphere_radius = 1.0;
-        let material = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+        let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);

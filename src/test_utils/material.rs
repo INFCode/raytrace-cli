@@ -7,7 +7,7 @@ use crate::{
 pub struct DummyMaterial {}
 
 impl DummyMaterial {
-    pub fn new_box() -> Box<dyn Material> {
+    pub fn new_boxed() -> Box<dyn Material> {
         Box::new(DummyMaterial {})
     }
 }
