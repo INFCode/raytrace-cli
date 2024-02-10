@@ -1,7 +1,7 @@
 use crate::materials::{Material, ScatterRecord};
 use crate::utils::random_unit_vector;
 use crate::utils::random_unit_vector_on_hemisphere;
-use crate::{ray::Ray, world::hittable::HitRecord};
+use crate::{ray::Ray, world::intersectable::IntersectRecord};
 use glam::DVec3;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ impl SimpleDiffuseMaterial {
 }
 
 impl Material for SimpleDiffuseMaterial {
-    fn scatter(&self, _ray: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, _ray: &Ray, hit: &IntersectRecord) -> Option<ScatterRecord> {
         let attenuation_factor = DVec3::splat(0.5);
         let scattered = Ray {
             origin: hit.point,
@@ -39,7 +39,7 @@ impl LambertianMaterial {
 }
 
 impl Material for LambertianMaterial {
-    fn scatter(&self, _ray: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, _ray: &Ray, hit: &IntersectRecord) -> Option<ScatterRecord> {
         let attenuation_factor = self.albedo;
         let mut random_dir = hit.normal + random_unit_vector();
         let epsilon = 1e-7;

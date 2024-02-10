@@ -3,7 +3,7 @@ use glam::DVec3;
 use crate::{
     ray::Ray,
     utils::{random_unit_vector, Interval},
-    world::HitRecord,
+    world::IntersectRecord,
 };
 
 use super::{Material, ScatterRecord};
@@ -21,7 +21,7 @@ impl MetalMaterial {
 }
 
 impl Material for MetalMaterial {
-    fn scatter(&self, ray: &Ray, hit: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, ray: &Ray, hit: &IntersectRecord) -> Option<ScatterRecord> {
         let unit_dir = ray.direction.normalize();
         let reflect = unit_dir - 2f64 * unit_dir.dot(hit.normal) * hit.normal;
         let fuzz_reflect = reflect + self.fuzz * random_unit_vector();

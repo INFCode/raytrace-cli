@@ -1,4 +1,4 @@
-use super::hittable::{HitRecord, Hittable};
+use super::intersectable::{IntersectRecord, Intersectable};
 use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
 use glam::{DQuat, DVec3};
 
@@ -37,8 +37,8 @@ impl<'a> Rectangle<'a> {
     }
 }
 
-impl<'a> Hittable for Rectangle<'a> {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord> {
+impl<'a> Intersectable for Rectangle<'a> {
+    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         let denom = self.normal.dot(ray.direction);
         if denom > -1e-6 {
             // parallel or from the back side, no intersection
@@ -63,7 +63,7 @@ impl<'a> Hittable for Rectangle<'a> {
 
         // Check if the factors are within the range [0, 1] for both edges
         if factor1 >= -0.5 && factor1 <= 0.5 && factor2 >= -0.5 && factor2 <= 0.5 {
-            Some(HitRecord::new(ray, self.normal, t, self.material))
+            Some(IntersectRecord::new(ray, self.normal, t, self.material))
         } else {
             None
         }
@@ -160,14 +160,14 @@ impl<'a> InfinitePlane<'a> {
     }
 }
 
-impl<'a> Hittable for InfinitePlane<'a> {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord> {
+impl<'a> Intersectable for InfinitePlane<'a> {
+    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         let denom = -self.normal.dot(ray.direction);
         if denom > 1e-6 {
             let p0l0 = self.position - ray.origin;
             let t = -p0l0.dot(self.normal) / denom;
             if avaliable_range.contains(t) {
-                Some(HitRecord::new(ray, self.normal, t, self.material))
+                Some(IntersectRecord::new(ray, self.normal, t, self.material))
             } else {
                 None
             }

@@ -1,4 +1,4 @@
-use super::hittable::{HitRecord, Hittable};
+use super::intersectable::{IntersectRecord, Intersectable};
 use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
 use glam::DVec3;
 
@@ -18,8 +18,8 @@ impl<'a> Sphere<'a> {
     }
 }
 
-impl<'a> Hittable for Sphere<'a> {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord> {
+impl<'a> Intersectable for Sphere<'a> {
+    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         // Solve the quadratic equation based on vector math.
         // Find the nearer intersection
         let oc = ray.origin - self.center;
@@ -53,7 +53,7 @@ impl<'a> Hittable for Sphere<'a> {
 
         let normal_vec = (ray.at(root) - self.center) / self.radius;
 
-        Some(HitRecord::new(ray, normal_vec, root, self.material))
+        Some(IntersectRecord::new(ray, normal_vec, root, self.material))
     }
 }
 

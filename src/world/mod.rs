@@ -1,6 +1,6 @@
-pub mod hittable;
+pub mod intersectable;
 pub mod plane;
 pub mod sphere;
-pub use hittable::{HitRecord, Hittable, World};
+pub use intersectable::{IntersectRecord, Intersectable, World};
 pub use plane::{InfinitePlane, Rectangle};
 pub use sphere::Sphere;

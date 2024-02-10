@@ -4,11 +4,11 @@ use crate::utils::Interval;
 use glam::DVec3;
 use std::boxed::Box;
 
-pub trait Hittable: Sync {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord>;
+pub trait Intersectable: Sync {
+    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord>;
 }
 
-pub struct HitRecord<'a> {
+pub struct IntersectRecord<'a> {
     pub point: DVec3,
     // Note that normal should unit vector.
     // TODO: Apply the Unit<> wrapper
@@ -18,7 +18,7 @@ pub struct HitRecord<'a> {
     pub mat: MaterialRef<'a>,
 }
 
-impl<'a> HitRecord<'a> {
+impl<'a> IntersectRecord<'a> {
     pub fn new(ray: &Ray, outward_normal: DVec3, t: f64, mat: MaterialRef<'a>) -> Self {
         let is_front = ray.direction.dot(outward_normal) < 0f64;
         let normal = if is_front {
@@ -38,10 +38,10 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub type World<'a> = Vec<Box<dyn Hittable + 'a>>;
+pub type World<'a> = Vec<Box<dyn Intersectable + 'a>>;
 
-impl<'a> Hittable for World<'a> {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<HitRecord> {
+impl<'a> Intersectable for World<'a> {
+    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         let mut nearest_record = None;
         let mut current_range = avaliable_range.clone();
         for h in self {

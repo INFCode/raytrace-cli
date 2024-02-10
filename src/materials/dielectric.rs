@@ -1,6 +1,6 @@
 use crate::materials::Material;
 use crate::ray::Ray;
-use crate::world::HitRecord;
+use crate::world::IntersectRecord;
 use glam::DVec3;
 use rand::random;
 
@@ -26,7 +26,7 @@ impl DielectricMaterial {
 }
 
 impl Material for DielectricMaterial {
-    fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, ray: &Ray, rec: &IntersectRecord) -> Option<ScatterRecord> {
         let attenuation = DVec3::ONE;
         let refraction_ratio = if rec.is_front { 1.0 / self.ir } else { self.ir };
 

@@ -18,7 +18,7 @@ use crate::materials::{
 };
 use crate::output::{ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
-use crate::world::{Hittable, InfinitePlane, Rectangle, Sphere};
+use crate::world::{InfinitePlane, Intersectable, Rectangle, Sphere};
 use glam::{DQuat, DVec3, EulerRot};
 
 fn main() {
@@ -70,12 +70,12 @@ fn main() {
 
     // world
     let world = vec![
-        Box::new(s1) as Box<dyn Hittable>,
-        Box::new(s2) as Box<dyn Hittable>,
-        Box::new(s3) as Box<dyn Hittable>,
-        Box::new(s4) as Box<dyn Hittable>,
-        Box::new(gnd) as Box<dyn Hittable>,
-        Box::new(mirror) as Box<dyn Hittable>,
+        Box::new(s1) as Box<dyn Intersectable>,
+        Box::new(s2) as Box<dyn Intersectable>,
+        Box::new(s3) as Box<dyn Intersectable>,
+        Box::new(s4) as Box<dyn Intersectable>,
+        Box::new(gnd) as Box<dyn Intersectable>,
+        Box::new(mirror) as Box<dyn Intersectable>,
     ];
 
     let buffer = camera.render::<LinearMixer>(&spec, &world);
