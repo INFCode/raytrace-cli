@@ -65,13 +65,13 @@ mod tests {
 
     #[test]
     fn test_hit_from_outside_sphere() {
-        let sphere_center = DVec3::new(0.0, 0.0, 0.0);
+        let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
         let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);
-        let ray_direction = DVec3::new(-1.0, 0.0, 0.0);
+        let ray_direction = DVec3::NEG_X;
         let ray = Ray::new(ray_origin, ray_direction);
 
         let available_range = Interval::new(0.0, 5.0);
@@ -81,13 +81,13 @@ mod tests {
 
     #[test]
     fn test_miss_from_outside_sphere() {
-        let sphere_center = DVec3::new(0.0, 0.0, 0.0);
+        let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
         let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 2.0, 0.0);
-        let ray_direction = DVec3::new(-1.0, 0.0, 0.0);
+        let ray_direction = DVec3::NEG_X;
         let ray = Ray::new(ray_origin, ray_direction);
 
         let available_range = Interval::new(0.0, 5.0);
@@ -97,13 +97,13 @@ mod tests {
 
     #[test]
     fn test_hit_from_inside_sphere() {
-        let sphere_center = DVec3::new(0.0, 0.0, 0.0);
+        let sphere_center = DVec3::ZERO;
         let sphere_radius = 2.0;
         let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
-        let ray_origin = DVec3::new(0.0, 0.0, 0.0);
-        let ray_direction = DVec3::new(1.0, 0.0, 0.0);
+        let ray_origin = DVec3::ZERO;
+        let ray_direction = DVec3::X;
         let ray = Ray::new(ray_origin, ray_direction);
 
         let available_range = Interval::new(0.0, 5.0);
@@ -113,13 +113,13 @@ mod tests {
 
     #[test]
     fn test_hit_with_limited_range() {
-        let sphere_center = DVec3::new(0.0, 0.0, 0.0);
+        let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
         let material = DummyMaterial::new_boxed();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);
-        let ray_direction = DVec3::new(-1.0, 0.0, 0.0);
+        let ray_direction = DVec3::NEG_X;
         let ray = Ray::new(ray_origin, ray_direction);
 
         let available_range = Interval::new(0.0, 0.5);
