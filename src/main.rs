@@ -12,9 +12,8 @@ mod world;
 
 use crate::camera::Camera;
 use crate::color::LinearMixer;
-use crate::materials::Material;
 use crate::materials::{
-    DielectricMaterial, LambertianMaterial, MetalMaterial, SimpleDiffuseMaterial,
+    DielectricMaterial, LambertianMaterial, Material, MetalMaterial, SimpleDiffuseMaterial,
 };
 use crate::output::{ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
@@ -40,13 +39,12 @@ fn main() {
     );
 
     // materials
-    let simple = Box::new(SimpleDiffuseMaterial::new()) as Box<dyn Material>;
+    let simple = SimpleDiffuseMaterial::make_shared(SimpleDiffuseMaterial::new());
     let lambertian =
-        Box::new(LambertianMaterial::new(DVec3::new(0.2, 0.8, 0.1))) as Box<dyn Material>;
-    let metal = Box::new(MetalMaterial::new(DVec3::splat(0.9), 0f64)) as Box<dyn Material>;
-    let metal_fuzz =
-        Box::new(MetalMaterial::new(DVec3::new(0.8, 0.6, 0.2), 0.6)) as Box<dyn Material>;
-    let dielectric = Box::new(DielectricMaterial::new(1.5)) as Box<dyn Material>;
+        LambertianMaterial::make_shared(LambertianMaterial::new(DVec3::new(0.2, 0.8, 0.1)));
+    let metal = MetalMaterial::make_shared(MetalMaterial::new(DVec3::splat(0.9), 0f64));
+    let metal_fuzz = MetalMaterial::make_shared(MetalMaterial::new(DVec3::new(0.8, 0.6, 0.2), 0.6));
+    let dielectric = DielectricMaterial::make_shared(DielectricMaterial::new(1.5));
 
     // objects
     let s1 = Sphere::new(DVec3::new(0f64, 0f64, -1f64), 0.5, &lambertian);

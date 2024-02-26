@@ -1,5 +1,5 @@
 use crate::{
-    materials::{Material, ScatterRecord},
+    materials::{Material, ScatterRecord, SharedMaterial},
     ray::Ray,
     world::IntersectRecord,
 };
@@ -7,8 +7,8 @@ use crate::{
 pub struct DummyMaterial {}
 
 impl DummyMaterial {
-    pub fn new_boxed() -> Box<dyn Material> {
-        Box::new(DummyMaterial {})
+    pub fn new_shared() -> SharedMaterial {
+        Self::make_shared(DummyMaterial {})
     }
 }
 

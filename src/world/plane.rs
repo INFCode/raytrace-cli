@@ -1,24 +1,24 @@
 use super::intersectable::{IntersectRecord, Intersectable};
-use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
+use crate::{materials::SharedMaterial, ray::Ray, utils::Interval};
 use glam::{DQuat, DVec3};
 
 fn plenary_hit() {}
 
-pub struct Rectangle<'a> {
+pub struct Rectangle {
     position: DVec3,
     normal: DVec3,
     right: DVec3,
     down: DVec3,
-    material: MaterialRef<'a>,
+    material: SharedMaterial,
 }
 
-impl<'a> Rectangle<'a> {
+impl Rectangle {
     pub fn new(
         position: DVec3,
         rotation: DQuat,
         width: f64,
         height: f64,
-        material: MaterialRef<'a>,
+        material: &SharedMaterial,
     ) -> Self {
         let normal = rotation * DVec3::Y;
         let right = rotation * DVec3::X * width;
@@ -32,12 +32,12 @@ impl<'a> Rectangle<'a> {
             normal,
             right,
             down,
-            material,
+            material: material.clone(),
         }
     }
 }
 
-impl<'a> Intersectable for Rectangle<'a> {
+impl Intersectable for Rectangle {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         let denom = self.normal.dot(ray.direction);
         if denom > -1e-6 {
@@ -63,7 +63,12 @@ impl<'a> Intersectable for Rectangle<'a> {
 
         // Check if the factors are within the range [0, 1] for both edges
         if factor1 >= -0.5 && factor1 <= 0.5 && factor2 >= -0.5 && factor2 <= 0.5 {
-            Some(IntersectRecord::new(ray, self.normal, t, self.material))
+            Some(IntersectRecord::new(
+                ray,
+                self.normal,
+                t,
+                self.material.clone(),
+            ))
         } else {
             None
         }
@@ -83,7 +88,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_parallel() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 10f64, 10f64, &material);
 
         let ray = Ray::new(DVec3::Y, DVec3::X);
@@ -93,7 +98,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_from_back_side() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 10f64, 10f64, &material);
 
         // Upward vector
@@ -104,7 +109,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_outside_region() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 2f64, 2f64, &material);
 
         // almost inside the region
@@ -118,7 +123,7 @@ mod finite_plane_tests {
 
     #[test]
     fn test_inside_region() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = Rectangle::new(DVec3::ZERO, DQuat::IDENTITY, 2f64, 2f64, &material);
 
         // almost outside the region
@@ -144,30 +149,35 @@ mod finite_plane_tests {
     }
 }
 
-pub struct InfinitePlane<'a> {
+pub struct InfinitePlane {
     position: DVec3,
     normal: DVec3,
-    material: MaterialRef<'a>,
+    material: SharedMaterial,
 }
 
-impl<'a> InfinitePlane<'a> {
-    pub fn new(position: DVec3, normal: DVec3, material: MaterialRef<'a>) -> Self {
+impl InfinitePlane {
+    pub fn new(position: DVec3, normal: DVec3, material: &SharedMaterial) -> Self {
         Self {
             position,
             normal,
-            material,
+            material: material.clone(),
         }
     }
 }
 
-impl<'a> Intersectable for InfinitePlane<'a> {
+impl Intersectable for InfinitePlane {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         let denom = -self.normal.dot(ray.direction);
         if denom > 1e-6 {
             let p0l0 = self.position - ray.origin;
             let t = -p0l0.dot(self.normal) / denom;
             if avaliable_range.contains(t) {
-                Some(IntersectRecord::new(ray, self.normal, t, self.material))
+                Some(IntersectRecord::new(
+                    ray,
+                    self.normal,
+                    t,
+                    self.material.clone(),
+                ))
             } else {
                 None
             }
@@ -185,7 +195,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn ray_from_below_misses() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray = Ray {
             origin: DVec3::NEG_Y,
@@ -200,7 +210,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn parallel_ray_misses() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_parallel = Ray {
             origin: DVec3::NEG_Y,
@@ -215,7 +225,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn ray_pointing_away_misses() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_away = Ray {
             origin: DVec3::Y,
@@ -230,7 +240,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn plane_out_of_range_misses() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_on_plane = Ray {
             origin: DVec3::new(0.0, 10.0, 0.0),
@@ -245,7 +255,7 @@ mod infinite_plane_tests {
 
     #[test]
     fn hit_ray_towards_plane() {
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let plane = InfinitePlane::new(DVec3::ZERO, DVec3::Y, &material);
         let ray_on_plane = Ray {
             origin: DVec3::Y,

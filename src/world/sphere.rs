@@ -1,24 +1,24 @@
 use super::intersectable::{IntersectRecord, Intersectable};
-use crate::{materials::MaterialRef, ray::Ray, utils::Interval};
+use crate::{materials::SharedMaterial, ray::Ray, utils::Interval};
 use glam::DVec3;
 
-pub struct Sphere<'a> {
+pub struct Sphere {
     center: DVec3,
     radius: f64,
-    material: MaterialRef<'a>,
+    material: SharedMaterial,
 }
 
-impl<'a> Sphere<'a> {
-    pub fn new(center: DVec3, radius: f64, material: MaterialRef<'a>) -> Self {
+impl Sphere {
+    pub fn new(center: DVec3, radius: f64, material: &SharedMaterial) -> Self {
         Self {
             center,
             radius,
-            material,
+            material: material.clone(),
         }
     }
 }
 
-impl<'a> Intersectable for Sphere<'a> {
+impl Intersectable for Sphere {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
         // Solve the quadratic equation based on vector math.
         // Find the nearer intersection
@@ -53,7 +53,12 @@ impl<'a> Intersectable for Sphere<'a> {
 
         let normal_vec = (ray.at(root) - self.center) / self.radius;
 
-        Some(IntersectRecord::new(ray, normal_vec, root, self.material))
+        Some(IntersectRecord::new(
+            ray,
+            normal_vec,
+            root,
+            self.material.clone(),
+        ))
     }
 }
 
@@ -67,7 +72,7 @@ mod tests {
     fn test_hit_from_outside_sphere() {
         let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);
@@ -83,7 +88,7 @@ mod tests {
     fn test_miss_from_outside_sphere() {
         let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 2.0, 0.0);
@@ -99,7 +104,7 @@ mod tests {
     fn test_hit_from_inside_sphere() {
         let sphere_center = DVec3::ZERO;
         let sphere_radius = 2.0;
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::ZERO;
@@ -115,7 +120,7 @@ mod tests {
     fn test_hit_with_limited_range() {
         let sphere_center = DVec3::ZERO;
         let sphere_radius = 1.0;
-        let material = DummyMaterial::new_boxed();
+        let material = DummyMaterial::new_shared();
         let sphere = Sphere::new(sphere_center, sphere_radius, &material);
 
         let ray_origin = DVec3::new(2.0, 0.0, 0.0);
