@@ -17,8 +17,10 @@ use crate::materials::{
 };
 use crate::output::{ImageFormatsSaver, ImageSaver};
 use crate::render_spec::{ImageSize, PinHoleSpec};
-use crate::world::{InfinitePlane, Intersectable, Rectangle, Sphere};
+use crate::world::{InfinitePlane, Intersectable, Rectangle, Sphere, VecContainer};
+use color::LinearRgbColor;
 use glam::{DQuat, DVec3, EulerRot};
+use world::LerpScene;
 
 fn main() {
     let spp = 500;
@@ -67,19 +69,22 @@ fn main() {
     );
 
     // world
-    let world = vec![
-        Box::new(s1) as Box<dyn Intersectable>,
-        Box::new(s2) as Box<dyn Intersectable>,
-        Box::new(s3) as Box<dyn Intersectable>,
-        Box::new(s4) as Box<dyn Intersectable>,
-        Box::new(gnd) as Box<dyn Intersectable>,
-        Box::new(mirror) as Box<dyn Intersectable>,
-    ];
+    let container = VecContainer::from_iter(vec![
+        s1.into_box(),
+        s2.into_box(),
+        s3.into_box(),
+        s4.into_box(),
+        gnd.into_box(),
+        mirror.into_box(),
+    ]);
+
+    let world = LerpScene::new(
+        container,
+        LinearRgbColor::new(1f64, 1f64, 1f64),
+        LinearRgbColor::new(0.5f64, 0.7f64, 1.0f64),
+    );
 
     let buffer = camera.render::<LinearMixer>(&spec, &world);
-    //buffer.save("test.png").unwrap();
     let saver = ImageFormatsSaver::new();
-    //let ascii_saver = AsciiArtSaver::new("/usr/share/fonts/consolas-with-yahei/consnerd.ttf");
     saver.save_to(&buffer, "test_saver.png");
-    //ascii_saver.save_to(&buffer, "ascii.out");
 }

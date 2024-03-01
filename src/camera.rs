@@ -6,7 +6,7 @@ use crate::color::LinearRgbColor;
 use crate::ray::Ray;
 use crate::render_spec::RenderSpec;
 use crate::utils::Interval;
-use crate::world::Intersectable;
+use crate::world::Scene;
 use image::{ImageBuffer, Rgb};
 use indicatif::{ParallelProgressIterator, ProgressStyle};
 use rayon::prelude::*;
@@ -29,7 +29,7 @@ impl Camera {
     pub fn render<M: ColorMixer>(
         &self,
         render_spec: &impl RenderSpec,
-        world: &impl Intersectable,
+        world: &impl Scene,
     ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let size = render_spec.image_size();
         let width = size.width as usize;
@@ -68,7 +68,7 @@ impl Camera {
         &self,
         mixer: &mut impl ColorMixer,
         render_spec: &impl RenderSpec,
-        world: &impl Intersectable,
+        world: &impl Scene,
         x: u32,
         y: u32,
     ) -> LinearRgbColor {
@@ -86,7 +86,7 @@ impl Camera {
         mixer.mix()
     }
 
-    fn ray_color<W: Intersectable>(ray: &Ray, world: &W, depth: u32) -> LinearRgbColor {
+    fn ray_color<W: Scene>(ray: &Ray, world: &W, depth: u32) -> LinearRgbColor {
         if depth <= 0 {
             // too many reflections, no light remaining
             return LinearRgbColor::from_hex(0x000000);
@@ -102,12 +102,6 @@ impl Camera {
             return LinearRgbColor::from_hex(0x6000a0);
         }
         // miss, background color
-        let dir = ray.direction.normalize();
-        let t = 0.5 * (dir.y + 1f64);
-        LinearRgbColor::lerp(
-            &LinearRgbColor::new(1f64, 1f64, 1f64),
-            &LinearRgbColor::new(0.5f64, 0.7f64, 1.0f64),
-            t,
-        )
+        world.miss(ray)
     }
 }

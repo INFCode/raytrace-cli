@@ -2,10 +2,15 @@ use crate::materials::SharedMaterial;
 use crate::ray::Ray;
 use crate::utils::Interval;
 use glam::DVec3;
-use std::boxed::Box;
 
 pub trait Intersectable: Sync {
     fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord>;
+    fn into_box(self) -> Box<dyn Intersectable + 'static>
+    where
+        Self: Sized + 'static,
+    {
+        Box::new(self)
+    }
 }
 
 pub struct IntersectRecord {
@@ -35,22 +40,5 @@ impl IntersectRecord {
             is_front,
             mat,
         }
-    }
-}
-
-pub type World = Vec<Box<dyn Intersectable>>;
-
-impl Intersectable for World {
-    fn hit(&self, ray: &Ray, avaliable_range: &Interval) -> Option<IntersectRecord> {
-        let mut nearest_record = None;
-        let mut current_range = avaliable_range.clone();
-        for h in self {
-            if let Some(rec) = h.hit(ray, &current_range) {
-                // Decrease the upperbound of the range to intersction test
-                current_range.upper = rec.t;
-                nearest_record = Some(rec);
-            }
-        }
-        nearest_record
     }
 }
